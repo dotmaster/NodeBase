@@ -1,11 +1,10 @@
-debugger;
 var nodeBase = require('../nodeBase'),
  util = require ('util');
  util.inherits(someClass, nodeBase);
  function someClass(){
    this.defaults={
-     some:'defaults',
-     defaults:'canNotBeOverridden'
+     put:'someDefaultsHere',
+     defaults:'canBeOverridden'
    }   
    nodeBase.apply(this, arguments);
  }
@@ -13,5 +12,5 @@ var nodeBase = require('../nodeBase'),
  
 
  
- var myObj = new someClass({logging:true, hello:'opts'}, {evenMore:'defaults', defaults:'canBeOverridden'});
+ var myObj = new someClass({logging:true, hello:'opts'}, {evenMore:'defaults', defaults:'willOverride'});
  myObj.someMember(); //should output

@@ -22,29 +22,34 @@ In Javascript:
      
      util.inherits(someClass, nodeBase);
      function someClass(){
+       this.defaults={
+          put:'someDefaultsHere',
+        }
        nodeBase.apply(this, arguments);
      }
      someClass.prototype.someMember = function(){this.log('hello there')}
  
      //then somewhere in your code
  
-     var myObj = new someClass({logging:true});
+     var myObj = new someClass({logging:true, some: opts}, {someMore: 'defaults'});
      myObj.someMember(); //should output [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
 
 In Coffeescript:
 
-    nodeBase = require '..nodeBase'
+    nodeBase = require '../nodeBase.coffee'
     util = require 'util'
 
     class someClass extends nodeBase
-      constructor:(opts) ->
-        super(opts)
+      constructor:(opts, defaults) ->
+        @defaults =
+          put:'someDefaultsHere'
+        super(arguments...)
       someMember: => @log 'hello there'
   
-    #then somewhere in your code
-    
     myObj = new someClass 
       logging: true
+      some:'opts',
+        someMore: 'defaults'
     myObj.someMember # should output  [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
 
 ## Using the utility functions
