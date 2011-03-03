@@ -10,7 +10,15 @@
        "logging",
        "defaults",
        "options",
-       "EventEmitter"
+       "EventEmitter",
+       "merge",
+       "extend",
+       "mixin",
+       "uuid",
+       "now",
+       "node version",
+       "version",
+       "util"
    ],
    "version": "0.1.0",
    "author": "dotmaster <greg@synaptic-labs.net>",

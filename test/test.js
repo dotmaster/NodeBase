@@ -1,4 +1,5 @@
-var nodeBase = require('../temp/nodeBase'),
+debugger;
+var nodeBase = require('../nodeBase'),
  util = require ('util');
  util.inherits(someClass, nodeBase);
  function someClass(){

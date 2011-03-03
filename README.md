@@ -47,6 +47,16 @@ In Coffeescript:
       logging: true
     myObj.someMember # should output  [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
 
+## Using the utility functions
+  nodeBase.UUID.uuid()
+    "B1BBA3DC-B1DE-477A-9CF8-7DB0000BA766"
+  nodeBase.now()
+    "Thu, 03 Mar 2011 22:28:39 GMT"
+  nodeBase.node_ver
+    major: 0
+    minor: 4
+    release: 1
+
 ## Credits
 
 - Gregor Schwab &lt;greg@synaptic-labs.net&gt; ([dotmaster](http://github.com/dotmaster))
