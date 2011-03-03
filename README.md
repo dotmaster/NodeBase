@@ -1,4 +1,4 @@
-NodeBase: A node base class for Javascript and Coffee (logging, options, defaults and EventEmitter)
+NodeBase: A node base class for Javascript and Coffeescript (logging, options, defaults and EventEmitter)
 ============================================
 
 This module is the mother of all Objects of my Projects. It adds logging facility, that can be turned on and off and EventEmitter support. It provides with standard options and also provide some utility functions (namely now, merge and node_ver). Feel free to fork this and provide your own implementation. This ships as a coffee version and a JavaScript version. 
