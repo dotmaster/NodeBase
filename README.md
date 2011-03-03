@@ -17,7 +17,7 @@ To install and run do the following
 
 In Javascript:
 
-     var nodeBase = require('../nodeBase'),
+     var nodeBase = require('path/to/nodeBase'),
      util = require ('util');
      
      util.inherits(someClass, nodeBase);
@@ -36,7 +36,7 @@ In Javascript:
 
 In Coffeescript:
 
-    nodeBase = require '../nodeBase.coffee'
+    nodeBase = require 'path/to/nodeBase.coffee'
     util = require 'util'
 
     class someClass extends nodeBase
