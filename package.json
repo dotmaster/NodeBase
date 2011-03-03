@@ -1,0 +1,28 @@
+{
+   "name": "nodeBase",
+   "description": "A node base class for Javascript and Coffee (logging, options, defaults and EventEmitter)",
+   "tags": [
+       "node",
+       "base",
+       "base class",
+       "inherits",
+       "prototype",
+       "logging",
+       "defaults",
+       "options",
+       "EventEmitter"
+   ],
+   "version": "0.1.0",
+   "author": "dotmaster <greg@synaptic-labs.net>",
+   "repository": {
+       "type": "git",
+       "url": "https://github.com/dotmaster/nodeBase"
+   },
+   "bugs": "https://github.com/dotmaster/nodeBase/issues",
+   "engines": [
+       "node >= 0.2.8"
+   ],
+   "main": "nodeBase.js",
+   "dependencies": {    
+    }
+}
