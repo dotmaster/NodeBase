@@ -16,14 +16,16 @@ class NodeBase extends events.EventEmitter
   @extend: merge  
   @node_ver: node_ver  
   
-  constructor:(opts) ->
+  constructor:(opts, defaults) ->
     super();
     self=this;
-    options(
+    defaults or= {};
+    merge @defaults, defaults
+    merge @options or= {},  
       #yourDefaultsGoHere: true
       logging: false
       cacheSize: 5
-    ,opts, self)
+    ,@defaults, opts
 
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
   _addContext: =>
@@ -41,18 +43,19 @@ module.exports.now = now = ->
 
 
 
-module.exports.options = options = (opts, mergeOpts, self) ->
-  if self
+module.exports.options = options = (opts, mergeOpts..., self) ->
+  if self instanceof NodeBase
     # if we are called from this
     self.options = merge opts or= {}, mergeOpts or= {}
   else
     merge opts or= {}, mergeOpts or= {}
 
 # a mixin function similar to _.extend
-module.exports.merge = merge = (source, merge) ->
-	for i of merge 
-	  source[i] = merge[i];
-	return source
+module.exports.merge = merge = (obj, args...) =>
+  for source in args
+    for prop of source
+      obj[prop] = source[prop]
+  return obj
 
 #the node version
 node_ver = null;

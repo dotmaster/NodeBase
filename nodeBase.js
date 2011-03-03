@@ -8,15 +8,18 @@ util.inherits(NodeBase, events.EventEmitter);
 
 module.exports=NodeBase;
 
-function NodeBase(opts){
+function NodeBase(opts, defaults){
+  debugger;
+  defaults = defaults || {};
   events.EventEmitter.call(this);
 	//process.EventEmitter.call(this);
 	var self=this;
+	self.defaults=merge(self.defaults, defaults);
 	options({
 	  //yourDefaultsGoHere: true,
 	  logging: false,
 		cacheSize: 5
-	}, opts, self);
+	}, self.defaults, opts, self);
 }
 //ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
 NodeBase.prototype._addContext = function(a){
@@ -35,19 +38,24 @@ function now(){
 }
 NodeBase.now = module.exports.now = now;
 
-function options(opts, mergeOpts, self){
-  if(self)
-	  self.options = merge(opts || {}, mergeOpts || {});
-	  else{
-	    return merge(opts || {}, mergeOpts || {});
-	  }
+function options(defaults){
+  var args = Array.prototype.slice.call(arguments);
+  var self = args[args.length-1]
+  if(self instanceof NodeBase)
+    args.pop(),
+	  self.options = merge.apply(null, args);
+  else{
+    return merge.appy(null, arguments);
+  }
 }
 NodeBase.options = module.exports.options = options;
 
 // a mixin function similar to _.extend
-function merge(source, merge){
-	for (var i in merge) source[i] = merge[i];
-	return source;
+function merge(obj){
+  Array.prototype.slice.call(arguments, 1).forEach (function(source) {
+     for (var prop in source) obj[prop] = source[prop];
+   });
+   return obj;
 };
 NodeBase.merge = module.exports.merge = merge;
 
