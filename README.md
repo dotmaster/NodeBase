@@ -1,7 +1,7 @@
 NodeBase: A node base class for Javascript and Coffeescript (logging, options, defaults and EventEmitter)
 ============================================
 
-This module is the mother of all Objects of my Projects. It adds logging facility, that can be turned on and off and EventEmitter support. It provides with standard options and also provide some utility functions (namely now, merge, uuid and node_ver). Feel free to fork this and provide your own implementation. This ships as a coffee version and a JavaScript version. 
+This module is the mother of all Objects of my Projects. It adds logging facility (with log levels, colored output and fancy stacktrace extraction of the current function you are in) that can be turned on and off and EventEmitter support. It provides with standard options and also provide some utility functions (namely now, merge, uuid and node_ver). Feel free to fork this and provide your own implementation. This ships as a coffee version and a JavaScript version. 
 
 ## Why?
 
@@ -63,6 +63,14 @@ In Coffeescript:
 
 There are some variable and function names, that you can't use in your derived class, cause the base class is using it.
 Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn, this.info, this.error, this.LOG_LEVELS
+
+## Features
+
+#Logging
+- fancy (highly experimental) stack trace extraction
+- log levels
+- colored output
+
 
 ## Options
 you can pass in the following options to your class:
