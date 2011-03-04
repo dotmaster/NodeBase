@@ -27,12 +27,19 @@ In Javascript:
         }
        nodeBase.apply(this, arguments);
      }
-     someClass.prototype.someMember = function(){this.log('hello there')}
+     someClass.prototype.someMember = function(){
+       this.error('hello there')
+       this.log('hello there')
+     }
  
      //then somewhere in your code
  
-     var myObj = new someClass({logging:true, some: opts}, {someMore: 'defaults'});
-     myObj.someMember(); //should output [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
+     var myObj = new someClass({logging:true, logLevel: 'WARN', some: opts}, {someMore: 'defaults'});
+     myObj.someMember(); 
+     //will output 
+     //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there
+     //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there
+     
 
 In Coffeescript:
 
@@ -51,6 +58,19 @@ In Coffeescript:
       some:'opts',
         someMore: 'defaults'
     myObj.someMember # should output  [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
+    
+## Reserved words
+
+There are some variable and function names, that you can't use in your derived class, cause the base class is using it.
+Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn, this.info, this.error, this.LOG_LEVELS
+
+## Options
+you can pass in the following options to your class:
+
+- logging: true/false turns logging on and off (DEFAULT is false)
+- logLevel: 'ALL' (same as 'LOG'), 'INFO', 'WARN', 'ERROR' turns logging on and off based on LOGLEVEL (DEFAULT is ALL)
+- printLevel: true/false prints the logging level in the output like [WARN]  (DEFAULT is true)
+- printContext: true/false prints the current context e.g. the class you are in (DEFAULT is true)
 
 ## Using the utility functions
   nodeBase.UUID.uuid()
@@ -61,6 +81,15 @@ In Coffeescript:
     major: 0
     minor: 4
     release: 1
+    
+## Running tests
+
+There is merely nothing right now: just type
+    cd test
+    //for Javascript
+    node test
+    //for Coffeescript
+    node test.coffee
 
 ## Credits
 

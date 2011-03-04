@@ -8,29 +8,56 @@ util.inherits(NodeBase, events.EventEmitter);
 
 module.exports=NodeBase;
 
+//LOG LEVELS
+var L = 0
+var LL =
+ { ALL: L++
+ , LOG : L++
+ , INFO : L++
+ , WARN : L++
+ , ERROR : L++
+ };
+for (L in LL) LL[LL[L]] = L; 
+module.exports.LOG_LEVELS = LL;
+   
 function NodeBase(opts, defaults){
-  debugger;
   defaults = defaults || {};
   events.EventEmitter.call(this);
 	//process.EventEmitter.call(this);
 	var self=this;
-	self.defaults=merge(self.defaults, defaults);
+	//self.defaults=merge(self.defaults, defaults); //leave defaults like they are
 	options({
 	  //yourDefaultsGoHere: true,
 	  logging: false,
-		cacheSize: 5
-	}, self.defaults, opts, self);
+	  logLevel: 'ALL',
+	  printLevel: true,
+	  printContext: true,
+		cacheSize: 5 //a fun property whatever this means
+	}, self.defaults, defaults, opts, self);
+	//loglevel
+ 
+
+  this.LOG_LEVELS = LL; //make loglevel available in the object
+  this._checkLogLevel = function(level){
+    return (LL[this.options.logLevel] <= LL[level]);
+  }
 }
+
 //ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
-NodeBase.prototype._addContext = function(a){
+NodeBase.prototype._addContext = function _addC(a, level){
   var args = Array.prototype.slice.call(a);
-  args.unshift('['+this.constructor.name+'] ' + '--' + now()+ ' '); 
+  if(level && this.options.printLevel)  args.unshift(stylize(level));   
+  try{
+    var stack = new Error().stack.split('at ')[3].match(/(.*)\s\(/)[1]; // selct everything before parenthesis
+  }catch(e){  } 
+  var stack = stack || this.constructor.name
+  if (this.options.printContext) args.unshift('['+stack+'] ' + '--' + now()+ ' '); 
   return args;   
 }
-NodeBase.prototype.log = function(a){ if (this.options.logging) console.log.apply(this, this._addContext(arguments));}
-NodeBase.prototype.warn = function(a){ if (this.options.logging) console.warn.apply(this, this._addContext(arguments));}
-NodeBase.prototype.info = function(a){ if (this.options.logging) console.info.apply(this, this._addContext(arguments));}  
-NodeBase.prototype.error = function(a){ if (this.options.logging) console.error.apply(this, this._addContext(arguments));}
+NodeBase.prototype.log = function(a){ if (this.options.logging && this._checkLogLevel('LOG')) console.log.apply(this, this._addContext(arguments, 'LOG'));}
+NodeBase.prototype.warn = function(a){ if (this.options.logging && this._checkLogLevel('WARN')) console.warn.apply(this, this._addContext(arguments, 'WARN'));}
+NodeBase.prototype.info = function(a){ if (this.options.logging && this._checkLogLevel('INFO')) console.info.apply(this, this._addContext(arguments, 'INFO'));}  
+NodeBase.prototype.error = function(a){ if (this.options.logging && this._checkLogLevel('ERROR')) console.error.apply(this, this._addContext(arguments, 'ERROR'));}
   // we try connecting every n milli seconds. On errors n is always doubled.
 
 function now(){
@@ -140,6 +167,43 @@ UUID.uuid = function (len, radix) {
 };
 
 NodeBase.uuid = module.exports.UUID = UUID;
+
+//Stylize color helper
+var stylize = function(level) {
+  // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+  var styles =
+      { 'bold' : [1, 22],
+        'italic' : [3, 23],
+        'underline' : [4, 24],
+        'inverse' : [7, 27],
+        'white' : [37, 39],
+        'grey' : [90, 39],
+        'black' : [30, 39],
+        'blue' : [34, 39],
+        'cyan' : [36, 39],
+        'green' : [32, 39],
+        'magenta' : [35, 39],
+        'red' : [31, 39],
+        'yellow' : [33, 39] };
+
+  var style =
+      { 'WARN': 'magenta',         
+        'ERROR': 'red',              
+        'INFO': 'cyan',        
+        'LOG': 'green',
+      }[level];
+
+  if (style) {
+    return '\033[' + styles[style][0] + 'm' + '[' + level + ']' +
+           '\033[' + styles[style][1] + 'm';
+  } else {
+    return str;
+  }
+};
+if (typeof global !== 'undefined' ) var colors=true;
+if (! colors) {
+  stylize = function(level) { return '['+ level+ '] '; };
+}
 
 
 
