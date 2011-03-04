@@ -18,9 +18,13 @@
        "now",
        "node version",
        "version",
-       "util"
+       "util",
+       "logging",
+       "stacktrace",
+       "colors",
+       "logleve"
    ],
-   "version": "0.2.0",
+   "version": "0.3.0",
    "author": "dotmaster <greg@synaptic-labs.net>",
    "repository": {
        "type": "git",
