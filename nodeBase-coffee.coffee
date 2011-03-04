@@ -41,7 +41,8 @@ class NodeBase extends events.EventEmitter
       logging: false
       logLevel: 'ALL'
       printLevel: true
-      printContext: true      
+      printContext: true    
+      useStack: true              
       cacheSize: 5
     ,@defaults, opts
     @LOG_LEVELS = LL #make log levels available in the object
@@ -58,7 +59,8 @@ class NodeBase extends events.EventEmitter
       stackArray = new Error().stack.split reg
       #console.log util.inspect stackArray
       #this is a hardcore hack, but what shalls
-      stack = if stackArray[9].indexOf('new') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
+      if @options.useStack 
+        stack = if stackArray[9].indexOf('new') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
     catch e  
     stack ?= @constructor.name
     ["[#{stack}]  -- #{now()} ", args...]  

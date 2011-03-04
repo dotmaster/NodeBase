@@ -82,6 +82,7 @@ you can pass in the following options to your class:
 - logLevel: 'ALL' (same as 'LOG'), 'INFO', 'WARN', 'ERROR' turns logging on and off based on LOGLEVEL (DEFAULT is ALL)
 - printLevel: true/false prints the logging level in the output like [WARN]  (DEFAULT is true)
 - printContext: true/false prints the current context e.g. the class you are in (DEFAULT is true)
+- useStack: true/false extracts function name from Stacktrace (highly experimental) for printing out the current context (DEFAULT is true)
 
 ## Using the utility functions
   nodeBase.UUID.uuid()
