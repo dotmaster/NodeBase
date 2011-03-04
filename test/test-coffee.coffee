@@ -1,4 +1,4 @@
-nodeBase = require '../nodeBase-coffee'
+nodeBase = require __dirname + '/../nodeBase-coffee'
 util = require 'util'
 
 class someClass extends nodeBase
@@ -16,4 +16,7 @@ myObj = new someClass
   logLevel: 'WARN'
   some:'opts',
     a: 'default'
-myObj.someMember() # should output  [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
+myObj.someMember() 
+# should output  
+#[new someClass] --Fri, 04 Mar 2011 11:53:16 GMT  [INFO] awesome!!! <--OUTPUT OF LOGLEVEL WILL BE COLORED
+#[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [WARN] hello there

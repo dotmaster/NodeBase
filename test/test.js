@@ -1,4 +1,4 @@
-var nodeBase = require('../nodeBase'),
+var nodeBase = require(__dirname + "/../nodeBase"),
  util = require ('util');
  util.inherits(someClass, nodeBase);
  function someClass(){
@@ -19,4 +19,9 @@ var nodeBase = require('../nodeBase'),
 
  
  var myObj = new someClass({logging:true, logLevel:'INFO', hello:'opts'}, {evenMore:'defaults', defaults:'willOverride'});
- myObj.someMember(); //should output
+ myObj.someMember(); 
+ //should output
+ //[new someClass] --Fri, 04 Mar 2011 11:53:16 GMT  [INFO] wow this is cool <--OUTPUT OF LOGLEVEL WILL BE COLORED
+ //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [INFO] hello there
+ //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [WARN] hello there
+ //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there

@@ -22,9 +22,9 @@
        "logging",
        "stacktrace",
        "colors",
-       "logleve"
+       "loglevel"
    ],
-   "version": "0.3.0",
+   "version": "0.3.1",
    "author": "dotmaster <greg@synaptic-labs.net>",
    "repository": {
        "type": "git",

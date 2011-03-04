@@ -1,5 +1,5 @@
-events = require('events');
-util=require('util');
+events = require('events')
+util = require(if process.binding('natives').util then 'util' else 'sys')
 
 #extend the stacktracelimit for coffeescript
 Error.stackTraceLimit = 50;
