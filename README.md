@@ -37,7 +37,7 @@ In Javascript:
      var myObj = new someClass({logging:true, logLevel: 'WARN', some: opts}, {someMore: 'defaults'});
      myObj.someMember(); 
      //will output 
-     //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there
+     //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there <--OUTPUT OF LOGLEVEL WILL BE COLORED
      //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there
      
 
@@ -57,7 +57,10 @@ In Coffeescript:
       logging: true
       some:'opts',
         someMore: 'defaults'
-    myObj.someMember # should output  [someClass]  -- Thu, 03 Mar 2011 22:01:29 GMT  hello there
+    myObj.someMember 
+    # will output 
+    #[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there <--OUTPUT OF LOGLEVEL WILL BE COLORED
+    #[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there    
     
 ## Reserved words
 
