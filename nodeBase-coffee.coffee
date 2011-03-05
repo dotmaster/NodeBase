@@ -42,7 +42,8 @@ class NodeBase extends events.EventEmitter
       logLevel: 'ALL'
       printLevel: true
       printContext: true    
-      useStack: true              
+      useStack: true  
+      emitLog: true            
       cacheSize: 5
     ,@defaults, opts
     @LOG_LEVELS = LL #make log levels available in the object
@@ -63,12 +64,17 @@ class NodeBase extends events.EventEmitter
         stack = if stackArray[9].indexOf('new') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
     catch e  
     stack ?= @constructor.name
-    ["[#{stack}]  -- #{now()} ", args...]  
+    message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
+    if @options.emitLog
+      @emit level, 
+        'message': message
+        'data': args[1...args.length] 
+    return message   
      
-  log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')...
-  warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')...
-  info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')...
-  error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')...                
+  log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
+  warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
+  info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
+  error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')                
   #export the base class
 
 module.exports = NodeBase

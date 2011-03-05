@@ -33,6 +33,7 @@ function NodeBase(opts, defaults){
 	  printLevel: true,
 	  printContext: true,
 	  useStack: true,
+	  emitLog: true,
 		cacheSize: 5 //a fun property whatever this means
 	}, self.defaults, defaults, opts, self);
 	//loglevel
@@ -47,13 +48,19 @@ function NodeBase(opts, defaults){
 //ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
 NodeBase.prototype._addContext = function _addC(a, level){
   var args = Array.prototype.slice.call(a);
+  var copy = args.slice(1, args.length);
   if(level && this.options.printLevel)  args.unshift(stylize(level)); 
   var stack;  
   try{
     if (this.options.useStack) stack = new Error().stack.split('at ')[3].match(/(.*)\s\(/)[1]; // selct everything before parenthesis
   }catch(e){  } 
   var stack = stack || this.constructor.name
+
   if (this.options.printContext) args.unshift('['+stack+'] ' + '--' + now()+ ' '); 
+
+  //emit a log event
+  if(this.options.emitLog) this.emit(level, {'message': args.join(' ') ,'data': copy })
+  
   return args;   
 }
 NodeBase.prototype.log = function(a){ if (this.options.logging && this._checkLogLevel('LOG')) console.log.apply(this, this._addContext(arguments, 'LOG'));}

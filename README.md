@@ -89,6 +89,7 @@ you can pass in the following options to your class:
 - printLevel: true/false prints the logging level in the output like [WARN]  (DEFAULT is true)
 - printContext: true/false prints the current context e.g. the class you are in (DEFAULT is true)
 - useStack: true/false extracts function name from Stacktrace (highly experimental) for printing out the current context (DEFAULT is true)
+- emitLog: true/false if to emit the log messages as an event of form ('level', {message: logMessage, data:anyObj}) (DEFAULT is true)
 
 ## Using the utility functions
   nodeBase.UUID.uuid()
