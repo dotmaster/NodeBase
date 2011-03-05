@@ -102,12 +102,20 @@ you can pass in the following options to your class:
     
 ## Running tests
 
+NodeBase has been tested against version node >0.2.0
+
 There is merely nothing right now: just type
     cd test
     //for Javascript
     node test
     //for Coffeescript
     node test.coffee
+
+## Todo
+- eventually remove some non generic utility functions (e.g. uuid)
+- eventually export log functions also statically
+- feel free to extend NodeBase in whatever way you want. E.g. a database logger, config reader and writer, etc.
+
 
 ## Credits
 
