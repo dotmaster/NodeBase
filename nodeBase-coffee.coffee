@@ -34,6 +34,8 @@ class NodeBase extends events.EventEmitter
     printLevel: true
     printContext: true    
     useStack: true
+    maxCap: 10000
+    addToCollection: false
   @options: @defaults
   @merge: merge
   @mixin: merge  
@@ -67,7 +69,6 @@ class NodeBase extends events.EventEmitter
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
-      addToCollection: false
     ,@defaults
     merge @options or= {}, @defaults, @constructor.defaults, opts
     @LOG_LEVELS = LL #make log levels available in the object
@@ -76,7 +77,7 @@ class NodeBase extends events.EventEmitter
     if @options.autoId then @_id = cid(this)
     if @options.autoUuid then @_uuid = UUID.uuid()  
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
-    if @options.addToCollection then addId(this)
+    if @constructor.options.addToCollection then addId(this)
 
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
   _addContext: ( args..., level ) =>
@@ -220,7 +221,7 @@ getTotalCids =  (obj) ->
 #a capped hash collection   
 class CappedCollection extends Array
   constructor: (max, key)->
-    @max = max
+    @max = max || NodeBase.options.maxCap
     @key = key ? '_id'
     @Collection = [];
     @_byFIFO=[];   

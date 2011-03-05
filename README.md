@@ -85,13 +85,17 @@ Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn,
 - fancy (highly experimental) stack trace extraction
 - log levels
 - colored output
+- as of version 0.5.0 introduced static logging (see test directory for usage)
 
 ### Auto Id and Uuid creation for objects
 - every new object gets a uuid and a id (starting from 1) stored unde _uuid and _id
 
+### Global cache of objects created (highly experimental)
+- version 0.5.0 has a global object cache (with a custom capped collection implementation to avoid memory leaks)
 
-## Options
-you can pass in the following options to your class:
+
+## Options and Defaults
+you can pass in the following defaults to your class:
 
 - logging: true/false turns logging on and off (DEFAULT is false)
 - logLevel: 'ALL' (same as 'LOG'), 'INFO', 'WARN', 'ERROR' turns logging on and off based on LOGLEVEL (DEFAULT is ALL)
@@ -100,6 +104,7 @@ you can pass in the following options to your class:
 - useStack: true/false extracts function name from Stacktrace (highly experimental) for printing out the current context (DEFAULT is true)
 - emitLog: true/false if to emit the log messages as an event of form ('level', {message: logMessage, data:anyObj}) (DEFAULT is true)
 - autoId, autoUuid: true/false if to generate an Id, Uuid for each object (DEFAULT is true)
+- addToCollection: true/false if to turn on the global caching (DEFAULT is false)
 
 ## Using the utility functions
   nodeBase.uuid()
