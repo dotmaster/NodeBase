@@ -43,12 +43,17 @@ class NodeBase extends events.EventEmitter
       printLevel: true
       printContext: true    
       useStack: true  
-      emitLog: true            
+      emitLog: true
+      autoId: true 
+      autoUuid: true                     
       cacheSize: 5
     ,@defaults, opts
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
+    if @options.autoId then @_cid = cid()
+    if @options.autoUuid then @_uuid = UUID.uuid()  
+    if @options.autoId then @_getTotalCids = -> getTotalCids @ #actually this is just a counter of times the constructor was called    
 
 
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
@@ -172,8 +177,25 @@ UUID.uuid = (len, radix=CHARS.length) ->
 				uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r]
 	uuid.join('')
 
-NodeBase.uuid = UUID
+NodeBase.uuid = UUID.uuid
+module.exports.UUID = UUID
 
+cids={}
+cid = (obj)->
+  if obj?.constructor.name? 
+    ++cids[obj.constructor.name] || cids[obj.constructor.name]= 1
+  else
+    ++cids['NodeBase'] || cids['NodeBase']= 1
+
+getTotalCids =  (obj) ->
+  if obj?.constructor.name?
+    cids[obj.constructor.name] || 0
+  else
+    cids['NodeBase'] || 0
+
+    
+
+NodeBase.cid = cid
 
 #Stylize color helper
 stylize = (level) ->

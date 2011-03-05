@@ -34,6 +34,8 @@ function NodeBase(opts, defaults){
 	  printContext: true,
 	  useStack: true,
 	  emitLog: true,
+	  autoUuid: true,
+	  autoId: true,
 		cacheSize: 5 //a fun property whatever this means
 	}, self.defaults, defaults, opts, self);
 	//loglevel
@@ -43,6 +45,10 @@ function NodeBase(opts, defaults){
   this._checkLogLevel = function(level){
     return (LL[this.options.logLevel] <= LL[level]);
   }
+  
+  if (this.options.autoUuid) this._id = NodeBase.uuid();
+	if (this.options.autoId) this._cid = NodeBase.cid(this);
+	if (this.options.autoId) this._getTotalCids = function(){ return getTotalCids(this)} //actually this is just a counter of times the constructor was called
 }
 
 //ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
@@ -175,7 +181,30 @@ UUID.uuid = function (len, radix) {
 	return uuid.join('');
 };
 
-NodeBase.uuid = module.exports.UUID = UUID;
+module.exports.UUID = UUID;
+NodeBase.uuid = UUID.uuid;
+
+var cids = {};
+
+function getTotalCids(obj){
+  if(obj && obj.constructor.name)
+    return cids[obj.constructor.name] || 0;
+  else
+    return cids['NodeBase'] || 0;
+}
+
+function cid(obj){
+  //group numbering based on constructor if an object is passed and the name exists
+  if(obj && obj.constructor.name)
+    return (++cids[obj.constructor.name] || cids[obj.constructor.name]= 1) //works cause NaN is false
+    //cids[obj.constructor.name]=cids[obj.constructor.name]?cids[obj.constructor.name]++:1;
+  //if not make a generic numbering for all objects
+  else 
+    return (++cids['NodeBase'] || cids['NodeBase']= 1)
+    //cids['NodeBase']=cids['NodeBase']?cids['NodeBase']++:1;
+}
+
+NodeBase.cid = module.exports.cid = cid;
 
 //Stylize color helper
 var stylize = function(level) {

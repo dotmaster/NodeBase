@@ -71,11 +71,11 @@ In Coffeescript:
 ## Reserved words
 
 There are some variable and function names, that you can't use in your derived class, cause the base class is using it.
-Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn, this.info, this.error, this.LOG_LEVELS
+Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn, this.info, this.error, this.LOG_LEVELS, this._uuid, this._cid_, this._getTotalCids, this._addContext (despite this.constructor)
 
 ## Features
 
-#Logging
+### Logging
 - fancy (highly experimental) stack trace extraction
 - log levels
 - colored output
@@ -90,9 +90,10 @@ you can pass in the following options to your class:
 - printContext: true/false prints the current context e.g. the class you are in (DEFAULT is true)
 - useStack: true/false extracts function name from Stacktrace (highly experimental) for printing out the current context (DEFAULT is true)
 - emitLog: true/false if to emit the log messages as an event of form ('level', {message: logMessage, data:anyObj}) (DEFAULT is true)
+- autoId, autoUuid: true/false if to generate an Id, Uuid for each object (DEFAULT is true)
 
 ## Using the utility functions
-  nodeBase.UUID.uuid()
+  nodeBase.uuid()
     "B1BBA3DC-B1DE-477A-9CF8-7DB0000BA766"
   nodeBase.now()
     "Thu, 03 Mar 2011 22:28:39 GMT"
