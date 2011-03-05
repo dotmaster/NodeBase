@@ -196,11 +196,11 @@ function getTotalCids(obj){
 function cid(obj){
   //group numbering based on constructor if an object is passed and the name exists
   if(obj && obj.constructor.name)
-    return (++cids[obj.constructor.name] || cids[obj.constructor.name]= 1) //works cause NaN is false
+    return ++cids[obj.constructor.name] || (cids[obj.constructor.name]= 1) //works cause NaN is false
     //cids[obj.constructor.name]=cids[obj.constructor.name]?cids[obj.constructor.name]++:1;
   //if not make a generic numbering for all objects
   else 
-    return (++cids['NodeBase'] || cids['NodeBase']= 1)
+    return ++cids['NodeBase'] || (cids['NodeBase']= 1)
     //cids['NodeBase']=cids['NodeBase']?cids['NodeBase']++:1;
 }
 
