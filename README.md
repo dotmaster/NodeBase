@@ -80,6 +80,9 @@ Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn,
 - log levels
 - colored output
 
+### Auto Id and Uuid creation for objects
+- every new object gets a uuid and a id (starting from 1) stored unde _uuid and _id
+
 
 ## Options
 you can pass in the following options to your class:
@@ -114,7 +117,6 @@ There is merely nothing right now: just type
     node test.coffee
 
 ## Todo
-- eventually remove some non generic utility functions (e.g. uuid)
 - eventually export log functions also statically
 - feel free to extend NodeBase in whatever way you want. E.g. a database logger, config reader and writer, etc.
 
