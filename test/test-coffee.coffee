@@ -1,5 +1,5 @@
 nodeBase = require __dirname + '/../nodeBase-coffee'
-util = require 'util'
+util = require(if process.binding('natives').util then 'util' else 'sys')
 
 class someClass extends nodeBase
   constructor:(opts, defaults) ->

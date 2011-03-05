@@ -1,5 +1,5 @@
 var nodeBase = require(__dirname + "/../nodeBase"),
- util = require ('util');
+ util = require(process.binding('natives').util ? 'util' : 'sys');
  util.inherits(someClass, nodeBase);
  function someClass(){
    this.defaults={

@@ -5,13 +5,19 @@ This module is the mother of all Objects of my Projects. It adds logging facilit
 
 ## Why?
 
-Cause I find it a cool idea, to have a base class, which solves all the recurring tasks a class must handle in day to day business.
+a) Cause I find it a cool idea, to have a base class, which solves all the recurring tasks a class must handle in day to day business.
+
+b) In nearly all node projects classes inherit often from the EventEmitter Object. However this is not enough base functionality. You can use this class everywhere you would use EventEmitter and get fancy logging, options and defaults for free!
 
 ## How to use
 
 To install and run do the following
 
 	git clone https://github.com/dotmaster/nodeBase
+	
+or
+
+  npm install nodeBase
 
 ### Implementing it on your project
 
