@@ -1,6 +1,12 @@
-var nodeBase = require(__dirname + "/../nodeBase"),
+var nodeBase = require("../nodeBase-coffee"), 
  util = require(process.binding('natives').util ? 'util' : 'sys');
  util.inherits(someClass, nodeBase);
+ 
+ //you need to add these lines to get static logging functions working 
+ someClass.defaults = { logging:true }
+ nodeBase.static(someClass) //add static functions
+ var log= function(){ someClass.log.apply(someClass, arguments) }
+ 
  function someClass(){
    this.defaults={
      put:'someDefaultsHere',
@@ -20,6 +26,8 @@ var nodeBase = require(__dirname + "/../nodeBase"),
  
  var myObj = new someClass({logging:true, logLevel:'INFO', hello:'opts'}, {evenMore:'defaults', defaults:'willOverride'});
  myObj.someMember(); 
+ 
+ log ('Number of Objects created ' + someClass.getTotalIds())
  //should output
  //[new someClass] --Fri, 04 Mar 2011 11:53:16 GMT  [INFO] wow this is cool <--OUTPUT OF LOGLEVEL WILL BE COLORED
  //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [INFO] hello there

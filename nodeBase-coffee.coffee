@@ -26,6 +26,7 @@ class NodeBase extends events.EventEmitter
   #static Functions
   @now: now
   @static: (superClass) -> 
+    superClass[i]?=NodeBase[i] for own i, val of NodeBase
     merge superClass.options or= {}, superClass.defaults #superClass options has already nodeBases @options merged in through extend
   @defaults: 
     logging: false
@@ -87,7 +88,7 @@ class NodeBase extends events.EventEmitter
       #console.log util.inspect stackArray
       #this is a hardcore hack, but what shalls
       if @options.useStack 
-        stack = if stackArray[9].indexOf('new') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
+        stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
     catch e  
     stack ?= @constructor.name
     if @options.autoId then id = " id:#{@_id}"

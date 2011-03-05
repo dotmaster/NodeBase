@@ -30,6 +30,12 @@
     __extends(NodeBase, events.EventEmitter);
     NodeBase.now = now;
     NodeBase.static = function(superClass) {
+      var i, val, _ref;
+      for (i in NodeBase) {
+        if (!__hasProp.call(NodeBase, i)) continue;
+        val = NodeBase[i];
+        (_ref = superClass[i]) != null ? _ref : superClass[i] = NodeBase[i];
+      }
       return merge(superClass.options || (superClass.options = {}), superClass.defaults);
     };
     NodeBase.defaults = {
@@ -154,7 +160,7 @@
         reg = new RegExp(/at\s(.*)\s\(/g);
         stackArray = new Error().stack.split(reg);
         if (this.options.useStack) {
-          stack = stackArray[9].indexOf('new') === -1 ? stackArray[11] : stackArray[9];
+          stack = stackArray[9].indexOf('new') === -1 && stackArray[11].indexOf('anonymous') === -1 ? stackArray[11] : stackArray[9];
         }
       } catch (e) {
 
