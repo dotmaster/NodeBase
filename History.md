@@ -2,6 +2,12 @@
 n.n.n / 2011-03-05 
 ==================
 
+  * added coffee-script dependency, log emit perfection
+  * fixed static function bindings @log: @log=
+
+n.n.n / 2011-03-05 
+==================
+
   * fixed static function bindings @log: @log=
 
 n.n.n / 2011-03-05 
