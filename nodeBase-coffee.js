@@ -43,7 +43,9 @@
       logLevel: 'ALL',
       printLevel: true,
       printContext: true,
-      useStack: true
+      useStack: true,
+      maxCap: 10000,
+      addToCollection: false
     };
     NodeBase.options = NodeBase.defaults;
     NodeBase.merge = merge;
@@ -73,30 +75,30 @@
         return cids['NodeBase'] || 0;
       }
     };
-    NodeBase.log = function() {
+    NodeBase.log = __bind(function() {
       if (this.options.logging && this._checkLogLevel('LOG')) {
         return console.log(this._addContext.apply(this, __slice.call(arguments).concat(['LOG'])));
       }
-    };
-    NodeBase.warn = function() {
+    }, NodeBase);
+    NodeBase.warn = __bind(function() {
       if (this.options.logging && this._checkLogLevel('WARN')) {
         return console.log(this._addContext.apply(this, __slice.call(arguments).concat(['WARN'])));
       }
-    };
-    NodeBase.info = function() {
+    }, NodeBase);
+    NodeBase.info = __bind(function() {
       if (this.options.logging && this._checkLogLevel('INFO')) {
         return console.log(this._addContext.apply(this, __slice.call(arguments).concat(['INFO'])));
       }
-    };
-    NodeBase.error = function() {
+    }, NodeBase);
+    NodeBase.error = __bind(function() {
       if (this.options.logging && this._checkLogLevel('ERROR')) {
         return console.log(this._addContext.apply(this, __slice.call(arguments).concat(['ERROR'])));
       }
-    };
+    }, NodeBase);
     NodeBase._checkLogLevel = function(level) {
       return LL[this.options.logLevel] <= LL[level];
     };
-    NodeBase._addContext = function() {
+    NodeBase._addContext = __bind(function() {
       var args, level, message, stack, _i;
       args = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), level = arguments[_i++];
       if ((level != null) && this.options.printLevel) {
@@ -104,18 +106,13 @@
       }
       stack = this.name + ' static';
       return message = "[" + stack + "]  -- " + (now()) + "  " + (args.join(' '));
-    };
+    }, NodeBase);
     function NodeBase(opts) {
       this.error = __bind(this.error, this);;
       this.info = __bind(this.info, this);;
       this.warn = __bind(this.warn, this);;
       this.log = __bind(this.log, this);;
-      this._addContext = __bind(this._addContext, this);;
-      this.NodeBase = __bind(this.NodeBase, this);;
-      this.NodeBase = __bind(this.NodeBase, this);;
-      this.NodeBase = __bind(this.NodeBase, this);;
-      this.NodeBase = __bind(this.NodeBase, this);;
-      this.NodeBase = __bind(this.NodeBase, this);;      var self;
+      this._addContext = __bind(this._addContext, this);;      var self;
       NodeBase.__super__.constructor.call(this);
       self = this;
       merge(this.defaults || (this.defaults = {}), {
@@ -127,8 +124,7 @@
         emitLog: true,
         autoId: true,
         autoUuid: true,
-        cacheSize: 5,
-        addToCollection: false
+        cacheSize: 5
       }, this.defaults);
       merge(this.options || (this.options = {}), this.defaults, this.constructor.defaults, opts);
       this.LOG_LEVELS = LL;
@@ -146,7 +142,7 @@
           return getTotalIds(this);
         };
       }
-      if (this.options.addToCollection) {
+      if (this.constructor.options.addToCollection) {
         addId(this);
       }
     }
@@ -199,7 +195,7 @@
       }
     };
     return NodeBase;
-  })();
+  }).call(this);
   module.exports = NodeBase;
   module.exports.LOG_LEVELS = LL;
   module.exports.now = now = function() {
@@ -321,7 +317,7 @@
   CappedCollection = (function() {
     __extends(CappedCollection, Array);
     function CappedCollection(max, key) {
-      this.max = max;
+      this.max = max || NodeBase.options.maxCap;
       this.key = key != null ? key : '_id';
       this.Collection = [];
       this._byFIFO = [];

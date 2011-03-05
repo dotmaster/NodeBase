@@ -24,11 +24,11 @@ class NodeBase extends events.EventEmitter
 
 
   #static Functions
-  @now: now
-  @static: (superClass) -> 
+  @now = now
+  @static = (superClass) -> 
     superClass[i]?=NodeBase[i] for own i, val of NodeBase
     merge superClass.options or= {}, superClass.defaults #superClass options has already nodeBases @options merged in through extend
-  @defaults: 
+  @defaults = 
     logging: false
     logLevel: 'ALL'
     printLevel: true
@@ -36,20 +36,20 @@ class NodeBase extends events.EventEmitter
     useStack: true
     maxCap: 10000
     addToCollection: false
-  @options: @defaults
-  @merge: merge
-  @mixin: merge  
-  @extend: merge  
-  @node_ver: node_ver 
-  @lookupId: (id)-> if @name? then Cache[@name]?.getId(id) else Cache['NodeBase']?.getId(id)
-  @Cache: ->  if @name? then Cache[@name]?.Collection else Cache['NodeBase']?.Collection
-  @getTotalIds: -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
-  @log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
-  @warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
-  @info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
-  @error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
+  @options = @defaults
+  @merge = merge
+  @mixin = merge  
+  @extend = merge  
+  @node_ver = node_ver 
+  @lookupId = (id)-> if @name? then Cache[@name]?.getId(id) else Cache['NodeBase']?.getId(id)
+  @Cache = ->  if @name? then Cache[@name]?.Collection else Cache['NodeBase']?.Collection
+  @getTotalIds = -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
+  @log = => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
+  @warn = => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
+  @info = => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
+  @error = => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
   @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
-  @_addContext: ( args..., level ) =>
+  @_addContext = ( args..., level ) =>
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
     message = "[#{stack}]  -- #{now()}  #{args.join ' '}"

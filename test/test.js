@@ -5,12 +5,12 @@ var nodeBase = require("../nodeBase-coffee"),
  //you need to add these lines to get static logging functions working 
  someClass.defaults = { logging:true }
  nodeBase.static(someClass) //add static functions
- var log= function(){ someClass.log.apply(someClass, arguments) }
+ var log= someClass.log
  
  function someClass(){
    this.defaults={
      put:'someDefaultsHere',
-     defaults:'canBeOverridden'
+     defaults:'canNotBeOverridden'
    }   
    nodeBase.apply(this, arguments);
   this.info('wow this is cool');
@@ -24,7 +24,7 @@ var nodeBase = require("../nodeBase-coffee"),
  
 
  
- var myObj = new someClass({logging:true, logLevel:'INFO', hello:'opts'}, {evenMore:'defaults', defaults:'willOverride'});
+ var myObj = new someClass({logging:true, logLevel:'INFO', hello:'opts'});
  myObj.someMember(); 
  
  log ('Number of Objects created ' + someClass.getTotalIds())
