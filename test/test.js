@@ -1,4 +1,4 @@
-var nodeBase = require("../nodeBase-coffee"), 
+var nodeBase = require("../index"), 
  util = require(process.binding('natives').util ? 'util' : 'sys');
  util.inherits(someClass, nodeBase);
  

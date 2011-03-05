@@ -1,4 +1,14 @@
 
+n.n.n / 2011-03-05 
+==================
+
+  * fixed static function bindings @log: @log=
+
+n.n.n / 2011-03-05 
+==================
+
+  * fixed static function bindings @log: @log=
+
 n.n.n / 2011-03-04 
 ==================
 

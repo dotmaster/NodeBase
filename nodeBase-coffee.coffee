@@ -34,6 +34,7 @@ class NodeBase extends events.EventEmitter
     printLevel: true
     printContext: true    
     useStack: true
+    emitLog: true    
     maxCap: 10000
     addToCollection: false
   @options = @defaults
@@ -49,11 +50,19 @@ class NodeBase extends events.EventEmitter
   @info = => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
   @error = => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
   @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
+  @_emitter = new events.EventEmitter();
   @_addContext = ( args..., level ) =>
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
     message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
-  
+    if @options.emitLog
+      @_emitter.emit level, 
+        'message': message
+        'data': 
+            'class': @name
+            'args': args[1...args.length]
+    return message
+          
   constructor:(opts) ->
     super()
     self=this
@@ -74,8 +83,8 @@ class NodeBase extends events.EventEmitter
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
-    if @options.autoId then @_id = cid(this)
-    if @options.autoUuid then @_uuid = UUID.uuid()  
+    @_id = if @options.autoId then cid(this) else ""
+    @_uuid =  if @options.autoUuid then UUID.uuid() else ""
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
     if @constructor.options.addToCollection then addId(this)
 
@@ -97,7 +106,11 @@ class NodeBase extends events.EventEmitter
     if @options.emitLog
       @emit level, 
         'message': message
-        'data': args[1...args.length] 
+        'data': 
+          'class': @constructor.name
+          'id': @_id
+          'uuid': @_uuid
+          'args': args[1...args.length] 
     return message   
      
   log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')

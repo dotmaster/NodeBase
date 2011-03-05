@@ -1,4 +1,4 @@
-nodeBase = require __dirname + '/../nodeBase-coffee'
+nodeBase = require __dirname + '/../index'
 
 util = require(if process.binding('natives').util then 'util' else 'sys')
 
