@@ -46,14 +46,14 @@ function NodeBase(opts, defaults){
     return (LL[this.options.logLevel] <= LL[level]);
   }
   
-  if (this.options.autoUuid) this._id = NodeBase.uuid();
-	if (this.options.autoId) this._cid = NodeBase.cid(this);
+  if (this.options.autoUuid) this._uuid = NodeBase.uuid();
+	if (this.options.autoId) this._id = NodeBase.cid(this);
 	if (this.options.autoId) this._getTotalCids = function(){ return getTotalCids(this)} //actually this is just a counter of times the constructor was called
 }
 
 //ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
 NodeBase.prototype._addContext = function _addC(a, level){
-  var args = Array.prototype.slice.call(a);
+  var args = Array.prototype.slice.call(a), id="";
   var copy = args.slice(1, args.length);
   if(level && this.options.printLevel)  args.unshift(stylize(level)); 
   var stack;  
@@ -61,8 +61,9 @@ NodeBase.prototype._addContext = function _addC(a, level){
     if (this.options.useStack) stack = new Error().stack.split('at ')[3].match(/(.*)\s\(/)[1]; // selct everything before parenthesis
   }catch(e){  } 
   var stack = stack || this.constructor.name
-
-  if (this.options.printContext) args.unshift('['+stack+'] ' + '--' + now()+ ' '); 
+  
+  if (this.options.autoId) id= ' id:'+ this._id;
+  if (this.options.printContext) args.unshift('['+stack + id + '] ' + '--' + now()+ ' '); 
 
   //emit a log event
   if(this.options.emitLog) this.emit(level, {'message': args.join(' ') ,'data': copy })

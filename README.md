@@ -3,6 +3,9 @@ NodeBase: A node base class for Javascript and Coffeescript (logging, options, d
 
 This module is the mother of all Objects of my Projects. It adds logging facility (with log levels, colored output and fancy stacktrace extraction of the current function you are in) that can be turned on and off and EventEmitter support. It provides with standard options and also provide some utility functions (namely now, merge, uuid and node_ver). Feel free to fork this and provide your own implementation. This ships as a coffee version and a JavaScript version. 
 
+NOTE: As of version 0.5.0 development is just done in Coffeescript!
+
+
 ## Why?
 
 a) Cause I find it a cool idea, to have a base class, which solves all the recurring tasks a class must handle in day to day business.
@@ -43,10 +46,13 @@ In Javascript:
      var myObj = new someClass({logging:true, logLevel: 'WARN', some: opts}, {someMore: 'defaults'});
      myObj.someMember(); 
      //will output 
-     //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there <--OUTPUT OF LOGLEVEL WILL BE COLORED
-     //[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there
-     
-
+     //[someClass.someMember id:1] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there
+     //[someClass.someMember id:1] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there
+                ^             ^                                       ^
+                |             |                                       |
+            the class   the object id                   OUTPUT OF LOGLEVEL WILL BE COLORED
+        and member function  
+        
 In Coffeescript:
 
     nodeBase = require 'path/to/nodeBase.coffee'
@@ -65,8 +71,8 @@ In Coffeescript:
         someMore: 'defaults'
     myObj.someMember 
     # will output 
-    #[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there <--OUTPUT OF LOGLEVEL WILL BE COLORED
-    #[someClass.someMember] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there    
+    #[someClass.someMember id:1] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there
+    #[someClass.someMember id:1] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there    
     
 ## Reserved words
 
@@ -119,6 +125,7 @@ There is merely nothing right now: just type
 ## Todo
 - eventually export log functions also statically
 - feel free to extend NodeBase in whatever way you want. E.g. a database logger, config reader and writer, etc.
+- eventually add an option for a static objects lookup function (danger of memory leak though)
 
 
 ## Credits

@@ -25,18 +25,37 @@ class NodeBase extends events.EventEmitter
 
   #static Functions
   @now: now
-  @options: options
+  @static: (superClass) -> 
+    merge superClass.options or= {}, superClass.defaults #superClass options has already nodeBases @options merged in through extend
+  @defaults: 
+    logging: false
+    logLevel: 'ALL'
+    printLevel: true
+    printContext: true    
+    useStack: true
+  @options: @defaults
   @merge: merge
   @mixin: merge  
   @extend: merge  
-  @node_ver: node_ver  
+  @node_ver: node_ver 
+  @lookupId: (id)-> if @name? then Cache[@name]?.getId(id) else Cache['NodeBase']?.getId(id)
+  @Cache: ->  if @name? then Cache[@name]?.Collection else Cache['NodeBase']?.Collection
+  @getTotalIds: -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
+  @log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
+  @warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
+  @info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
+  @error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
+  @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
+  @_addContext: ( args..., level ) =>
+    args.unshift stylize(level) if level? and @options.printLevel   
+    stack = @name + ' static'
+    message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
   
-  constructor:(opts, defaults) ->
+  constructor:(opts) ->
     super()
     self=this
-    defaults or= {}
     #merge @defaults, defaults #leave defaults like they are
-    merge @options or= {},  
+    merge @defaults or= {},  
       #yourDefaultsGoHere: true
       logging: false
       logLevel: 'ALL'
@@ -47,14 +66,16 @@ class NodeBase extends events.EventEmitter
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
-    ,@defaults, opts
+      addToCollection: false
+    ,@defaults
+    merge @options or= {}, @defaults, @constructor.defaults, opts
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
-    if @options.autoId then @_cid = cid()
+    if @options.autoId then @_id = cid(this)
     if @options.autoUuid then @_uuid = UUID.uuid()  
-    if @options.autoId then @_getTotalCids = -> getTotalCids @ #actually this is just a counter of times the constructor was called    
-
+    if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
+    if @options.addToCollection then addId(this)
 
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
   _addContext: ( args..., level ) =>
@@ -69,7 +90,8 @@ class NodeBase extends events.EventEmitter
         stack = if stackArray[9].indexOf('new') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
     catch e  
     stack ?= @constructor.name
-    message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
+    if @options.autoId then id = " id:#{@_id}"
+    message = "[#{stack + id}]  -- #{now()}  #{args.join ' '}"
     if @options.emitLog
       @emit level, 
         'message': message
@@ -89,14 +111,14 @@ module.exports.now = now = ->
 	new Date().toUTCString();
 
 
-
+###
 module.exports.options = options = (opts, mergeOpts..., self) ->
   if self instanceof NodeBase
     # if we are called from this
     self.options = merge opts or= {}, mergeOpts or= {}
   else
     merge opts or= {}, mergeOpts or= {}
-
+###
 # a mixin function similar to _.extend
 module.exports.merge = merge = (obj, args...) =>
   for source in args
@@ -180,6 +202,7 @@ UUID.uuid = (len, radix=CHARS.length) ->
 NodeBase.uuid = UUID.uuid
 module.exports.UUID = UUID
 
+#Cid Handling
 cids={}
 cid = (obj)->
   if obj?.constructor.name? 
@@ -193,7 +216,56 @@ getTotalCids =  (obj) ->
   else
     cids['NodeBase'] || 0
 
-    
+#a capped hash collection   
+class CappedCollection extends Array
+  constructor: (max, key)->
+    @max = max
+    @key = key ? '_id'
+    @Collection = [];
+    @_byFIFO=[];   
+    @_getLast = -> @_byFIFO.pop() 
+    @comparator = (value) => value._id
+  addId: (obj) ->
+   @_byFIFO.unshift(obj)
+   index = @_sortedIndex(@Collection, obj, @comparator)
+   @Collection.splice(index, 0, obj)
+   #if we exceeded the maximum size remove the last element
+   if @max and @Collection.length > @max  
+     #lookup the lastobject in the collection
+     lastIndex = @_sortedIndex(@Collection, @_getLast(), @comparator)
+     @Collection.splice(lastIndex, 1)   
+  getId: (id) ->
+    index = @_nearestObjAtIndex(@Collection, id, @comparator)
+    if @Collection[index][@key] is id then @Collection[index] else undefined
+
+  _sortedIndex: (array, obj, comparator) ->
+    comparator ||= (value)->value
+    low =  0
+    high = array.length
+    while low < high
+     mid = (low + high) >> 1
+     if comparator(array[mid]) < comparator(obj) then low = mid + 1 else high = mid
+    low
+
+  _nearestObjAtIndex: (array, id, comparator) ->
+    comparator ||= (value)->value
+    low =  0
+    high = array.length
+    while low < high
+      mid = (low + high) >> 1
+      if comparator(array[mid]) < id then low = mid + 1 else high = mid
+    low
+  
+
+#add Ids to a global collection, can be looked up with the static function className.lookupId
+Cache = {}
+addId = (obj)->
+  if obj?.constructor.name? 
+   #(Cache[obj.constructor.name]?={})[obj._id] = obj
+   (Cache[obj.constructor.name]?=new CappedCollection()).addId(obj)
+  else
+    #(Cache['NodeBase']?={})[obj._id] = obj
+    (Cache['NodeBase']?=new CappedCollection()).addId(obj)
 
 NodeBase.cid = cid
 
