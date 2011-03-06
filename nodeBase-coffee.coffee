@@ -43,7 +43,7 @@ class NodeBase extends events.EventEmitter
   @extend = merge  
   @node_ver = node_ver 
   @lookupId = (id)-> if @name? then Cache[@name]?.getId(id) else Cache['NodeBase']?.getId(id)
-  @Cache = ->  if @name? then Cache[@name]?.Collection else Cache['NodeBase']?.Collection
+  @Cache = ->  if @name? then Cache[@name] else Cache['NodeBase']
   @getTotalIds = -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
   @log = => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
   @warn = => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
@@ -208,10 +208,10 @@ UUID.uuid = (len, radix=CHARS.length) ->
 
 		# Fill in random data.  At i==19 set the high bits of clock sequence as
 		# per rfc4122, sec. 4.1.5
-		for i in [0..36]
+		for i in [0...36]
 			if not uuid[i] 
 				r = 0 | Math.random()*16
-				uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r]
+				uuid[i] = chars[if (i == 19) then (r & 0x3) | 0x8 else r]
 	uuid.join('')
 
 NodeBase.uuid = UUID.uuid
@@ -232,44 +232,23 @@ getTotalCids =  (obj) ->
     cids['NodeBase'] || 0
 
 #a capped hash collection   
-class CappedCollection extends Array
-  constructor: (max, key)->
-    @max = max || NodeBase.options.maxCap
-    @key = key ? '_id'
-    @Collection = [];
+#a capped hash collection   
+class CappedObject extends Array
+  constructor: (max)->
+    @max = max 
+    @Collection = {};
     @_byFIFO=[];   
     @_getLast = -> @_byFIFO.pop() 
-    @comparator = (value) => value._id
   addId: (obj) ->
    @_byFIFO.unshift(obj)
-   index = @_sortedIndex(@Collection, obj, @comparator)
-   @Collection.splice(index, 0, obj)
+   @Collection[obj._id] = obj #insert the Object at id into the hash
    #if we exceeded the maximum size remove the last element
-   if @max and @Collection.length > @max  
+   if @max and @_byFIFO.length > @max  
      #lookup the lastobject in the collection
-     lastIndex = @_sortedIndex(@Collection, @_getLast(), @comparator)
-     @Collection.splice(lastIndex, 1)   
+     pop = @_getLast()
+     delete @Collection[pop._id]
   getId: (id) ->
-    index = @_nearestObjAtIndex(@Collection, id, @comparator)
-    if @Collection[index][@key] is id then @Collection[index] else undefined
-
-  _sortedIndex: (array, obj, comparator) ->
-    comparator ||= (value)->value
-    low =  0
-    high = array.length
-    while low < high
-     mid = (low + high) >> 1
-     if comparator(array[mid]) < comparator(obj) then low = mid + 1 else high = mid
-    low
-
-  _nearestObjAtIndex: (array, id, comparator) ->
-    comparator ||= (value)->value
-    low =  0
-    high = array.length
-    while low < high
-      mid = (low + high) >> 1
-      if comparator(array[mid]) < id then low = mid + 1 else high = mid
-    low
+    @Collection[id]
   
 
 #add Ids to a global collection, can be looked up with the static function className.lookupId
@@ -277,10 +256,10 @@ Cache = {}
 addId = (obj)->
   if obj?.constructor.name? 
    #(Cache[obj.constructor.name]?={})[obj._id] = obj
-   (Cache[obj.constructor.name]?=new CappedCollection()).addId(obj)
+   (Cache[obj.constructor.name]?=new CappedObject(NodeBase.options.maxCap)).addId(obj)
   else
     #(Cache['NodeBase']?={})[obj._id] = obj
-    (Cache['NodeBase']?=new CappedCollection()).addId(obj)
+    (Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap)).addId(obj)
 
 NodeBase.cid = cid
 

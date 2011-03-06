@@ -118,7 +118,7 @@ you can pass in the following defaults to your class:
     
 ## Running tests
 
-NodeBase has been tested against version node >0.2.0
+NodeBase has been tested against version node >0.2.0 (only compiled Javascript version)
 
 There is merely nothing right now: just type
     cd test
@@ -126,6 +126,8 @@ There is merely nothing right now: just type
     node test
     //for Coffeescript
     node test.coffee
+    
+Furthermore there are some performance tests regarding the Cache implementation [www.perf.com/browse/Gregor]  (http://www.perf.com/browse/Gregor)
 
 ## Todo
 - eventually export log functions also statically
