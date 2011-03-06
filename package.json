@@ -25,7 +25,7 @@
        "id",
        "uuid"
    ],
-   "version": "0.5.3",
+   "version": "0.5.4",
    "author": "dotmaster <greg@synaptic-labs.net>",
    "repository": {
        "type": "git",
