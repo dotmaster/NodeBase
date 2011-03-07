@@ -99,6 +99,17 @@ b) as a mixin (beginning from version 0.6.0)
         #nodeBase as a mixin
         @[i]=n[i] for i, val of n = new nodeBase(arguments...)
       register: => #some member functions
+      
+      myObj = new filteredClient 
+        logging: true
+        logLevel: 'WARN'
+        some:'opts'
+
+      myObj.register()
+            
+      #will output
+      #[new filteredClient id:1]  -- Mon, 07 Mar 2011 12:52:08 GMT  [ERROR] awesome!!!
+      #[filteredClient.register id:1]  -- Mon, 07 Mar 2011 12:52:08 GMT  [WARN] hello there
 
     
 ## Reserved words
