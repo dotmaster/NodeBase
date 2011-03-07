@@ -22,7 +22,6 @@ LL[LL[L]] = L for L of LL #yeah!
 
 class NodeBase extends events.EventEmitter
 
-
   #static Functions
   @now = now
   @static = (superClass) -> 
@@ -64,6 +63,9 @@ class NodeBase extends events.EventEmitter
     return message
           
   constructor:(opts) ->
+    @init(opts)
+    
+  init: (opts) ->
     super()
     self=this
     #merge @defaults, defaults #leave defaults like they are

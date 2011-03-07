@@ -8,7 +8,7 @@ class someClass extends nodeBase
   @defaults: 
     logging:true
     addToCollection: true
-  @static(@); #add static @options to class
+  nodeBase.static(@); #add static @options to class
   constructor:(opts) ->
     @defaults =
       put:'someDefaultsHere'
