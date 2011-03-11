@@ -24,7 +24,7 @@ or
 
 ### Implementing it on your project
 
-In Javascript:
+In Javascript: (deprecated use Coffeescript instead)
 
      var nodeBase = require('path/to/nodeBase'),
      util = require ('util');
@@ -55,7 +55,10 @@ In Javascript:
         
 In Coffeescript:
 
-    nodeBase = require 'path/to/nodeBase.coffee'
+There are tow ways to implement NodeBase:
+a) Inheritance
+
+    nodeBase = require 'path/to/nodeBase/'
     util = require 'util'
 
     class someClass extends nodeBase
@@ -73,6 +76,41 @@ In Coffeescript:
     # will output 
     #[someClass.someMember id:1] --Fri, 04 Mar 2011 11:53:16 GMT  [ERROR] hello there
     #[someClass.someMember id:1] --Fri, 04 Mar 2011 11:53:16 GMT  [LOG] hello there    
+
+b) as a mixin (beginning from version 0.6.0)
+    nodeBase = require 'path/to/nodeBase/'
+    util = require(if process.binding('natives').util then 'util' else 'sys')
+    
+    #enable static logging
+    log = -> filteredClient.log arguments...
+    
+    #class has another base class than nodeBase already
+    class filteredClient extends Client
+      #add some static class defaults
+      @defaults: 
+        logging:true
+      nodeBase.static(@); #add static @options and @defaults to class
+      constructor:(opts) -> #pass in some object level options
+        #add some object level defaults
+        @defaults =
+          put:'someDefaultsHere'
+        #must call the constructor before mixing in nodeBase! (to reduce risk of potentially shallowing constructor functions of Client)
+        super(arguments...)
+        #nodeBase as a mixin
+        @[i]=n[i] for i, val of n = new nodeBase(arguments...)
+      register: => #some member functions
+      
+      myObj = new filteredClient 
+        logging: true
+        logLevel: 'WARN'
+        some:'opts'
+
+      myObj.register()
+            
+      #will output
+      #[new filteredClient id:1]  -- Mon, 07 Mar 2011 12:52:08 GMT  [ERROR] awesome!!!
+      #[filteredClient.register id:1]  -- Mon, 07 Mar 2011 12:52:08 GMT  [WARN] hello there
+
     
 ## Reserved words
 

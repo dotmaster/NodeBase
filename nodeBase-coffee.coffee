@@ -1,6 +1,5 @@
 events = require('events')
 util = require(if process.binding('natives').util then 'util' else 'sys')
-
 #extend the stacktracelimit for coffeescript
 Error.stackTraceLimit = 50;
 
@@ -26,7 +25,7 @@ class NodeBase extends events.EventEmitter
   @now = now
   @static = (superClass) -> 
     superClass[i]?=NodeBase[i] for own i, val of NodeBase
-    merge superClass.options or= {}, superClass.defaults #superClass options has already nodeBases @options merged in through extend
+    merge superClass.options or= {}, superClass.defaults, false #superClass options has already nodeBases @options merged in through extend
   @defaults = 
     logging: false
     logLevel: 'ALL'
@@ -63,10 +62,10 @@ class NodeBase extends events.EventEmitter
     return message
           
   constructor:(opts) ->
+    super()    
     @init(opts)
     
   init: (opts) ->
-    super()
     self=this
     #merge @defaults, defaults #leave defaults like they are
     merge @defaults or= {},  
@@ -80,8 +79,8 @@ class NodeBase extends events.EventEmitter
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
-    ,@defaults
-    merge @options or= {}, @defaults, @constructor.defaults, opts
+    ,@defaults, false
+    merge @options or= {}, @defaults, @constructor.defaults, opts, false
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
@@ -137,9 +136,12 @@ module.exports.options = options = (opts, mergeOpts..., self) ->
     merge opts or= {}, mergeOpts or= {}
 ###
 # a mixin function similar to _.extend
-module.exports.merge = merge = (obj, args...) =>
+module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
+  log = true
+  if typeof last is 'object' then args.push last else log = false
   for source in args
     for prop of source
+      if obj[prop]? and log then module.exports.warn "property #{prop} exists"
       obj[prop] = source[prop]
   return obj
 
@@ -172,7 +174,7 @@ glue = (f, obj, oargs...) ->
   (iargs...) ->
     f.apply? obj, oargs.concat iargs
 
-NodeBase.glue = module.exports.glue = glue;
+module.exports.glue = glue;
 
 ###
   Code taken from Robert Kieffer UUID
@@ -216,7 +218,7 @@ UUID.uuid = (len, radix=CHARS.length) ->
 				uuid[i] = chars[if (i == 19) then (r & 0x3) | 0x8 else r]
 	uuid.join('')
 
-NodeBase.uuid = UUID.uuid
+module.exports.uuid = UUID.uuid
 module.exports.UUID = UUID
 
 #Cid Handling
@@ -263,7 +265,7 @@ addId = (obj)->
     #(Cache['NodeBase']?={})[obj._id] = obj
     (Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap)).addId(obj)
 
-NodeBase.cid = cid
+module.exports.cid = cid
 
 #Stylize color helper
 stylize = (level) ->
