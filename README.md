@@ -24,7 +24,7 @@ or
 
 ### Implementing it on your project
 
-In Javascript: (deprecated use Coffeescript instead)
+In Javascript: 
 
      var nodeBase = require('path/to/nodeBase'),
      util = require ('util');
