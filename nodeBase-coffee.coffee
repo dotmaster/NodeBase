@@ -146,7 +146,7 @@ module.exports.merge = module.exports.extend = module.exports.mixin = merge = (o
   return obj
 
 #the node version
-node_ver = null;
+node_ver = null
 do ->
   return node_ver if node_ver?
   ver = process.version
