@@ -27,8 +27,8 @@ class NodeBase extends events.EventEmitter
     superClass[i]?=NodeBase[i] for own i, val of NodeBase
     merge superClass.options or= {}, superClass.defaults, false #superClass options has already nodeBases @options merged in through extend
   @defaults = 
-    logging: false
-    logLevel: 'ALL'
+    logging: true
+    logLevel: 'ERROR'
     printLevel: true
     printContext: true    
     useStack: true
