@@ -30,11 +30,11 @@ In Javascript:
      util = require ('util');
      
      util.inherits(someClass, nodeBase);
-     function someClass(){
+     function someClass(opts){
        this.defaults={
-          put:'someDefaultsHere',
+          put:'someDefaultsHere'
         }
-       nodeBase.apply(this, arguments);
+       nodeBase.apply(this, arguments); //pass the opts to the parrent constructor, will set this.options as a mixin of defaults and opts
      }
      someClass.prototype.someMember = function(){
        this.error('hello there')
@@ -59,10 +59,10 @@ In Coffeescript:
     util = require 'util'
 
     class someClass extends nodeBase
-      constructor:(opts, defaults) ->
+      constructor:(opts) ->
         @defaults =
           put:'someDefaultsHere'
-        super(arguments...)
+        super(arguments...) #pass options to super, will set @options as a mixin of defaults and opts
       someMember: => @log 'hello there'
   
     myObj = new someClass 
