@@ -97,7 +97,7 @@ b) as a mixin (beginning from version 0.6.0)
         #must call the constructor before mixing in nodeBase! (to reduce risk of potentially shallowing constructor functions of Client)
         super(arguments...)
         #nodeBase as a mixin, using merge is better then just saying @[i]=n[i]
-        NodeBase.merge @[i] ||= {} = n[i] for i, val of n = new nodeBase(opts,@defaults) #remember to pass the defaults
+        @[i] = NodeBase.merge @[i] ||= {} = n[i] for i, val of n = new nodeBase(opts,@defaults) #remember to pass the defaults
       register: => #some member functions
       
       myObj = new filteredClient 
