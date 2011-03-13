@@ -68,9 +68,10 @@ class NodeBase extends events.EventEmitter
   init: (opts, defaults) ->
     self=this
     #merge @defaults, defaults #leave defaults like they are
-    @defaults = merge
-      logging: false
-      logLevel: 'ALL'
+    @defaults = merge @defaults or= {},  
+      #yourDefaultsGoHere: true
+      logging: true
+      logLevel: 'ERROR'
       printLevel: true
       printContext: true    
       useStack: true  
@@ -79,7 +80,8 @@ class NodeBase extends events.EventEmitter
       autoUuid: true                     
       cacheSize: 5
     ,defaults, false
-    @options = merge @options or= {}, @defaults, @constructor.defaults, opts, true
+    # merge constructor leve defaults before object level defaults
+    @options = merge @options or= {}, @constructor.defaults, @defaults, opts, true
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
