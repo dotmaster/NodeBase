@@ -139,17 +139,23 @@ module.exports.options = options = (opts, mergeOpts..., self) ->
 ###
 # a mixin function similar to _.extend
 module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
-  log = true
-  initialProps = []
-  if typeof last is 'object' then args.push last else log = last
+  log = true #logging of merge conflict is turned on by default
+  initialProps = {}
+  initialProps[prop] = true for own prop of obj
+  if typeof last isnt 'boolean' then args.push last else log = last
   for source in args
-    for prop of source
-      if obj[prop]?   #if the property already exists
-        if initialProps[prop] and log  #and it is part of the initalProperties the object had before merge and we log
-          module.exports.warn "property #{prop} exists" #give a warning about overwriting and existing initial Property of Object
-        else #and the property is not yet in the array of initalProperties tracking add it for tracking
-          initialProps[prop]=true 
-      obj[prop] = source[prop]
+    if typeof source isnt 'object' #its e.g. a function, string, array, etc.
+      if not isEmpty(obj) 
+        debugger
+        if log then NodeBase.warn "Object #{JSON.stringify(obj) or typeof obj[prop]} exists and will be overwritten with #{JSON.stringify(source) or typeof obj[prop]}"
+      obj = source
+    else  
+      for own prop of source
+        if initialProps[prop]?   #if the property already exists in the iniotial properties the object had before merge
+          if log  # and we log
+            NodeBase.warn "property #{prop} exists and value #{JSON.stringify(obj[prop]) or typeof obj[prop]} will be overwritten with #{JSON.stringify(source[prop]) or typeof obj[prop]}" #give a warning about overwriting and existing initial Property of Object
+            ###at #{new Error().stack}###
+        obj[prop] = source[prop]
   return obj
 
 #the node version
@@ -260,7 +266,7 @@ class CappedObject extends Array
      #lookup the lastobject in the collection
      pop = @_getLast()
      delete @Collection[pop._id]
-     module.exports.warn "CAP LIMIT REACHED! Dropping object #{pop._id} of collection #{@name}"
+     NodeBase.warn "CAP LIMIT REACHED! Dropping object #{pop._id} of collection #{@name}"
      @dropped = true #set to true cause we started drppng elements
   getId: (id) ->
     if not @Collection[id] and @dropped then module.exports.error "the object #{id} was not found in the collection, this might be due to dropped elements!"
@@ -318,5 +324,18 @@ else
   stylize = (level) ->  
     return '['+ level + '] '
 
+#from underscore.coffee
+isEmpty = (obj) ->
+  return obj.length is 0 if isArray(obj) or isString(obj)
+  return false for own key of obj
+  true
 
+isElement   = (obj) -> obj and obj.nodeType is 1
 
+isArguments = (obj) -> obj and obj.callee
+
+isFunction  = (obj) -> !!(obj and obj.constructor and obj.call and obj.apply)
+
+isString    = (obj) -> !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
+
+isArray     = Array.isArray or (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
