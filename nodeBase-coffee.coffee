@@ -61,17 +61,17 @@ class NodeBase extends events.EventEmitter
             'args': args[1...args.length]
     return message
           
-  constructor:(opts) ->
+  constructor:(opts, defaults) ->
     super()    
-    @init(opts)
+    @init(opts, defaults)
     
-  init: (opts) ->
+  init: (opts, defaults) ->
     self=this
     #merge @defaults, defaults #leave defaults like they are
     merge @defaults or= {},  
       #yourDefaultsGoHere: true
-      logging: false
-      logLevel: 'ALL'
+      logging: true
+      logLevel: 'ERROR'
       printLevel: true
       printContext: true    
       useStack: true  
@@ -79,8 +79,8 @@ class NodeBase extends events.EventEmitter
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
-    ,@defaults, false
-    merge @options or= {}, @defaults, @constructor.defaults, opts, false
+    ,defaults, false
+    @options = merge @options or= {}, @constructor.defaults, @defaults, opts, true
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
@@ -138,7 +138,7 @@ module.exports.options = options = (opts, mergeOpts..., self) ->
 # a mixin function similar to _.extend
 module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
   log = true
-  if typeof last is 'object' then args.push last else log = false
+  if typeof last is 'object' then args.push last else log = last
   for source in args
     for prop of source
       if obj[prop]? and log then module.exports.warn "property #{prop} exists"

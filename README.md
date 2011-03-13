@@ -65,7 +65,7 @@ a) Inheritance
       constructor:(opts) ->
         @defaults =
           put:'someDefaultsHere'
-        super(arguments...) #pass options to super, will set @options as a mixin of defaults and opts
+        super(opts) #pass options to super, will set @options as a mixin of defaults and opts, no need to pass defaulkts here
       someMember: => @log 'hello there'
   
     myObj = new someClass 
@@ -81,7 +81,7 @@ b) as a mixin (beginning from version 0.6.0)
     nodeBase = require 'path/to/nodeBase/'
     util = require(if process.binding('natives').util then 'util' else 'sys')
     
-    #enable static logging
+    #make a static logging shortcut
     log = -> filteredClient.log arguments...
     
     #class has another base class than nodeBase already
@@ -90,14 +90,14 @@ b) as a mixin (beginning from version 0.6.0)
       @defaults: 
         logging:true
       nodeBase.static(@); #add static @options and @defaults to class
-      constructor:(opts) -> #pass in some object level options
+      constructor:(opts) -> #pass in some object level options and the defaults
         #add some object level defaults
         @defaults =
           put:'someDefaultsHere'
         #must call the constructor before mixing in nodeBase! (to reduce risk of potentially shallowing constructor functions of Client)
         super(arguments...)
-        #nodeBase as a mixin
-        @[i]=n[i] for i, val of n = new nodeBase(arguments...)
+        #nodeBase as a mixin, using merge is better then just saying @[i]=n[i]
+        NodeBase.merge @[i] ||= {} = n[i] for i, val of n = new nodeBase(opts,@defaults) #remember to pass the defaults
       register: => #some member functions
       
       myObj = new filteredClient 
