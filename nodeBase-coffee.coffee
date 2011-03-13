@@ -61,15 +61,14 @@ class NodeBase extends events.EventEmitter
             'args': args[1...args.length]
     return message
           
-  constructor:(opts) ->
+  constructor:(opts, defaults) ->
     super()    
-    @init(opts)
+    @init(opts, defaults)
     
-  init: (opts) ->
+  init: (opts, defaults) ->
     self=this
     #merge @defaults, defaults #leave defaults like they are
-    merge @defaults or= {},  
-      #yourDefaultsGoHere: true
+    @defaults = merge
       logging: false
       logLevel: 'ALL'
       printLevel: true
@@ -79,11 +78,12 @@ class NodeBase extends events.EventEmitter
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
-    ,@defaults, false
-    merge @options or= {}, @defaults, @constructor.defaults, opts, false
+    ,defaults, false
+    @options = merge @options or= {}, @defaults, @constructor.defaults, opts, true
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
+    if @_id and @options.autoId then @warn 'overwriting _id'
     @_id = if @options.autoId then cid(this) else ""
     @_uuid =  if @options.autoUuid then UUID.uuid() else ""
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
@@ -138,10 +138,15 @@ module.exports.options = options = (opts, mergeOpts..., self) ->
 # a mixin function similar to _.extend
 module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
   log = true
-  if typeof last is 'object' then args.push last else log = false
+  initialProps = []
+  if typeof last is 'object' then args.push last else log = last
   for source in args
     for prop of source
-      if obj[prop]? and log then module.exports.warn "property #{prop} exists"
+      if obj[prop]?   #if the property already exists
+        if initialProps[prop] and log  #and it is part of the initalProperties the object had before merge and we log
+          module.exports.warn "property #{prop} exists" #give a warning about overwriting and existing initial Property of Object
+        else #and the property is not yet in the array of initalProperties tracking add it for tracking
+          initialProps[prop]=true 
       obj[prop] = source[prop]
   return obj
 
@@ -238,8 +243,10 @@ getTotalCids =  (obj) ->
 #a capped hash collection   
 #a capped hash collection   
 class CappedObject extends Array
-  constructor: (max)->
+  constructor: (max, name)->
     @max = max 
+    @name = name
+    @dropped = false
     @Collection = {};
     @_byFIFO=[];   
     @_getLast = -> @_byFIFO.pop() 
@@ -251,19 +258,24 @@ class CappedObject extends Array
      #lookup the lastobject in the collection
      pop = @_getLast()
      delete @Collection[pop._id]
+     module.exports.warn "CAP LIMIT REACHED! Dropping object #{pop._id} of collection #{@name}"
+     @dropped = true #set to true cause we started drppng elements
   getId: (id) ->
-    @Collection[id]
+    if not @Collection[id] and @dropped then module.exports.error "the object #{id} was not found in the collection, this might be due to dropped elements!"
+    return @Collection[id] 
   
 
 #add Ids to a global collection, can be looked up with the static function className.lookupId
 Cache = {}
 addId = (obj)->
+  #check if autoId is turned on or the object has an id
+  if not obj._id then module.exports.error "Obj to add has no propety _id, please turn on autoId or give the object an _id before passing it to super"
   if obj?.constructor.name? 
    #(Cache[obj.constructor.name]?={})[obj._id] = obj
-   (Cache[obj.constructor.name]?=new CappedObject(NodeBase.options.maxCap)).addId(obj)
+   (Cache[obj.constructor.name]?=new CappedObject(NodeBase.options.maxCap, obj.constructor.name)).addId(obj)
   else
     #(Cache['NodeBase']?={})[obj._id] = obj
-    (Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap)).addId(obj)
+    (Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap, 'NodeBase')).addId(obj)
 
 module.exports.cid = cid
 
