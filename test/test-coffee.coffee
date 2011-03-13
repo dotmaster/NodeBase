@@ -14,6 +14,7 @@ class someClass extends nodeBase
     @defaults =
       put:'someDefaultsHere'
     super(arguments...)
+    @on 'error', (err) -> @warn 'emitted and catched error ' + JSON.stringify(err)
     @error 'awesome!!!'
   someMember: => 
     @log 'hello there'
@@ -23,6 +24,7 @@ myObj = new someClass
   logging: true
   logLevel: 'WARN'
   some:'opts',
+  
 myObj.someMember() 
 
 

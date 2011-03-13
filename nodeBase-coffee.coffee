@@ -3,6 +3,54 @@ util = require(if process.binding('natives').util then 'util' else 'sys')
 #extend the stacktracelimit for coffeescript
 Error.stackTraceLimit = 50;
 
+#from underscore.coffee
+isEmpty = (obj) ->
+  return obj.length is 0 if isArray(obj) or isString(obj)
+  return false for own key of obj
+  true
+isElement   = (obj) -> obj and obj.nodeType is 1
+isArguments = (obj) -> obj and obj.callee
+isFunction  = (obj) -> !!(obj and obj.constructor and obj.call and obj.apply)
+isString    = (obj) -> !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
+isArray     = Array.isArray or (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
+###
+# 
+# MERGE
+# a mixin function similar to _.extend but more powerful
+# it can also deal with non objects like functions
+#
+# @desc A cool merge function, that emits warnings
+#
+# @args obj, args..., last
+# the first argunment is the object we merge in,, which can also be a function, or better if the first obj is not an object we just set it to the merge value,
+# the last can be a boolean, in such case it is a switch for turning on and off warnings, on overwriting existing variables
+# logging of warnings is turned on by default
+#
+###
+module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
+  if not obj? then throw new Error('merge: first parameter must not be undefined')
+  log = true #logging of merge conflict is turned on by default
+  initialProps = {}
+  initialProps[prop] = true for own prop of obj
+  if typeof last isnt 'boolean' then args.push last else log = last
+  for source in args
+    if obj is source then return obj #if it's the same just return 
+    if (typeof source isnt 'object') and source? #if source is not an object and not undefined set obj to source, but log if we overwrite an existing obj
+      if (typeof obj isnt 'object' and obj?) or not isEmpty(obj) #obj can be a function or string or an object containing something, then we warn
+        debugger
+        if log then NodeBase.warn "Object #{JSON.stringify(obj) or obj.name or typeof obj} exists and will be overwritten with #{JSON.stringify(source) or obj.name or typeof obj}"
+      obj = source
+    else  
+      for own prop of source
+        if initialProps[prop]?   #if the property already exists in the iniotial properties the object had before merge
+          if log  # and we log
+            NodeBase.warn "property #{prop} exists and value #{JSON.stringify(obj[prop]) or typeof obj[prop]} will be overwritten with #{JSON.stringify(source[prop]) or typeof obj[prop]}" #give a warning about overwriting and existing initial Property of Object
+            ###at #{new Error().stack}###
+        obj[prop] = source[prop]
+  return obj
+#Coffeescript is anoying on this, all you don't define before, will be undefined
+#NodeBase.options = NodeBase.defaults = merge NodeBase.defaults, NodeBase.objdefaults
+
 #LOG LEVELS
 L = 0
 LL =
@@ -33,7 +81,7 @@ class NodeBase extends events.EventEmitter
     printContext: true    
     useStack: true
     emitLog: true    
-  @defaults = #see below Coffescript is annoying on using functions that are defined later in context
+  @defaults = merge @objdefaults, #see above Coffescript is annoying on using functions that are defined later in context
       addToCollection: false         
       maxCap: 10000    
   @options = @defaults
@@ -51,16 +99,18 @@ class NodeBase extends events.EventEmitter
   @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
   @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
   @_emitter = new events.EventEmitter();
+  @_emitter.on 'error', (err) -> console.log JSON.stringify err
   @_addContext = ( args..., level ) ->
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
     message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
     if @options.emitLog
-      @_emitter.emit level, 
+      @_emitter.emit level.toLowerCase(), 
         'message': message
         'data': 
             'class': @name
             'args': args[1...args.length]
+        'type': args[1]
     return message
           
   constructor:(opts, defaults) ->
@@ -83,6 +133,7 @@ class NodeBase extends events.EventEmitter
     ,defaults, false
     # merge constructor level Object defaults before object level defaults
     @options = merge @options or= {}, @constructor.objdefaults, defaults, opts, true
+    #@on 'error', (err) -> @log 'emitted error ' + JSON.stringify(err)
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
@@ -108,15 +159,22 @@ class NodeBase extends events.EventEmitter
     if @options.autoId then id = " id:#{@_id}"
     message = "[#{stack + id}]  -- #{now()}  #{args.join ' '}"
     if @options.emitLog
-      @emit level, 
+      @emit level.toLowerCase(), 
         'message': message
         'data': 
           'class': @constructor.name
           'id': @_id
           'uuid': @_uuid
           'args': args[1...args.length] 
+        'type': args[1] #let's say that the first argument is the message, the second the type
     return message   
-     
+  ###  
+  #
+  # OBJECT LOGGING
+  # error is special in that the first argument is interpretated as message, second as type, third, ... as arguments
+  #
+  #
+  ###     
   log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
   warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
   info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
@@ -128,51 +186,6 @@ module.exports.LOG_LEVELS = LL;
 
 module.exports.now = now = ->
 	new Date().toUTCString();
-
-#from underscore.coffee
-isEmpty = (obj) ->
-  return obj.length is 0 if isArray(obj) or isString(obj)
-  return false for own key of obj
-  true
-isElement   = (obj) -> obj and obj.nodeType is 1
-isArguments = (obj) -> obj and obj.callee
-isFunction  = (obj) -> !!(obj and obj.constructor and obj.call and obj.apply)
-isString    = (obj) -> !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
-isArray     = Array.isArray or (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
-###
-# 
-# MERGE
-# a mixin function similar to _.extend but more powerful
-#
-# @desc A cool merge function, that emits warnings
-#
-# @args obj, args..., last
-# the first argunment is the object we merge in,, which can also be a function, or better if the first obj is not an object we just set it to the merge value,
-# the last can be a boolean, in such case it is a switch for turning on and off warnings, on overwriting existing variables
-# logging of warnings is turned on by default
-#
-###
-module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
-  if not obj? then throw new Error('merge: first parameter must not be undefined')
-  log = true #logging of merge conflict is turned on by default
-  initialProps = {}
-  initialProps[prop] = true for own prop of obj
-  if typeof last isnt 'boolean' then args.push last else log = last
-  for source in args
-    if (typeof source isnt 'object') and source? #if source is not an object and not undefined set obj to source, but log if we overwrite an existing obj
-      if (typeof obj isnt 'object' and obj?) or not isEmpty(obj) #obj can be a function or string or an object containing something, then we warn
-        if log then NodeBase.warn "Object #{JSON.stringify(obj) or typeof obj} exists and will be overwritten with #{JSON.stringify(source) or typeof obj}"
-      obj = source
-    else  
-      for own prop of source
-        if initialProps[prop]?   #if the property already exists in the iniotial properties the object had before merge
-          if log  # and we log
-            NodeBase.warn "property #{prop} exists and value #{JSON.stringify(obj[prop]) or typeof obj[prop]} will be overwritten with #{JSON.stringify(source[prop]) or typeof obj[prop]}" #give a warning about overwriting and existing initial Property of Object
-            ###at #{new Error().stack}###
-        obj[prop] = source[prop]
-  return obj
-#Coffeescript is anoying on this, all you don't define before, will be undefined
-NodeBase.options = NodeBase.defaults = merge NodeBase.defaults, NodeBase.objdefaults
     
 #the node version
 node_ver = null

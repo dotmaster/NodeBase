@@ -25,6 +25,7 @@ var nodeBase = require("../index"),
 
  
  var myObj = new someClass({logging:true, logLevel:'INFO', hello:'opts'});
+ myObj.on('error', function(err){log('emitted error', JSON.stringify(err))})
  myObj.someMember(); 
  
  log ('Number of Objects created ' + someClass.getTotalIds())
