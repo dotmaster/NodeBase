@@ -7,6 +7,7 @@ log = -> someClass.log arguments...
 class someClass extends nodeBase
   @defaults: 
     logging:true
+    logLevel: 'ALL'
     addToCollection: true
   nodeBase.static(@); #add static @options to class
   constructor:(opts) ->

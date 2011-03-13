@@ -8,7 +8,14 @@ NOTE: As of version 0.5.0 development is just done in Coffeescript!
 
 ## Why?
 
-a) Cause I find it a cool idea, to have a base class, which solves all the recurring tasks a class must handle in day to day business.
+a) Cause I find it a cool idea, to have a base class, which solves all the recurring tasks a class must handle in day to day business. Meaning essentially 
+
+- logging and logLevels and stackTrace context extraction
+- options and defaults handling
+- event emitting
+- autoId's and uuid's
+- Cache and lookup Objects in a global collection
+- a merge function, which emits warnings if you overwrite existing properties. Useful, when you make heavy use of mixins
 
 b) In nearly all node projects classes inherit often from the EventEmitter Object. However this is not enough base functionality. You can use this class everywhere you would use EventEmitter and get fancy logging, options and defaults for free!
 
@@ -168,9 +175,10 @@ There is merely nothing right now: just type
 Furthermore there are some performance tests regarding the Cache implementation [www.perf.com/browse/Gregor]  (http://www.perf.com/browse/Gregor)
 
 ## Todo
-- eventually export log functions also statically
+- write some guides and tutorials of how to use this
+- DONE eventually export log functions also statically
 - feel free to extend NodeBase in whatever way you want. E.g. a database logger, config reader and writer, etc.
-- eventually add an option for a static objects lookup function (danger of memory leak though)
+- DONE eventually add an option for a static objects lookup function (danger of memory leak though - SOLVED WITH A CAPPED COLLECTION HASH)
 
 
 ## Credits

@@ -26,30 +26,32 @@ class NodeBase extends events.EventEmitter
   @static = (superClass) -> 
     superClass[i]?=NodeBase[i] for own i, val of NodeBase
     merge superClass.options or= {}, superClass.defaults, false #superClass options has already nodeBases @options merged in through extend
-  @defaults = 
+  @objdefaults = 
     logging: true
     logLevel: 'ERROR'
     printLevel: true
     printContext: true    
     useStack: true
     emitLog: true    
-    maxCap: 10000
-    addToCollection: false
+  @defaults = #see below Coffescript is annoying on using functions that are defined later in context
+      addToCollection: false         
+      maxCap: 10000    
   @options = @defaults
   @merge = merge
   @mixin = merge  
   @extend = merge  
   @node_ver = node_ver 
+  #Class Collection specific
   @lookupId = (id)-> if @name? then Cache[@name]?.getId(id) else Cache['NodeBase']?.getId(id)
   @Cache = ->  if @name? then Cache[@name] else Cache['NodeBase']
   @getTotalIds = -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
-  @log = => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
-  @warn = => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
-  @info = => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
-  @error = => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
+  @log = -> if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
+  @warn = -> debugger; if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
+  @info = -> if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
+  @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
   @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
   @_emitter = new events.EventEmitter();
-  @_addContext = ( args..., level ) =>
+  @_addContext = ( args..., level ) ->
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
     message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
@@ -67,9 +69,8 @@ class NodeBase extends events.EventEmitter
     
   init: (opts, defaults) ->
     self=this
-    #merge @defaults, defaults #leave defaults like they are
-    @defaults = merge @defaults or= {},  
-      #yourDefaultsGoHere: true
+    #merge defaults but don't make them public -> defaults will become options
+    defaults = merge {},  
       logging: true
       logLevel: 'ERROR'
       printLevel: true
@@ -80,8 +81,8 @@ class NodeBase extends events.EventEmitter
       autoUuid: true                     
       cacheSize: 5
     ,defaults, false
-    # merge constructor leve defaults before object level defaults
-    @options = merge @options or= {}, @constructor.defaults, @defaults, opts, true
+    # merge constructor level Object defaults before object level defaults
+    @options = merge @options or= {}, @constructor.objdefaults, defaults, opts, true
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
@@ -128,26 +129,39 @@ module.exports.LOG_LEVELS = LL;
 module.exports.now = now = ->
 	new Date().toUTCString();
 
-
+#from underscore.coffee
+isEmpty = (obj) ->
+  return obj.length is 0 if isArray(obj) or isString(obj)
+  return false for own key of obj
+  true
+isElement   = (obj) -> obj and obj.nodeType is 1
+isArguments = (obj) -> obj and obj.callee
+isFunction  = (obj) -> !!(obj and obj.constructor and obj.call and obj.apply)
+isString    = (obj) -> !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
+isArray     = Array.isArray or (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
 ###
-module.exports.options = options = (opts, mergeOpts..., self) ->
-  if self instanceof NodeBase
-    # if we are called from this
-    self.options = merge opts or= {}, mergeOpts or= {}
-  else
-    merge opts or= {}, mergeOpts or= {}
+# 
+# MERGE
+# a mixin function similar to _.extend but more powerful
+#
+# @desc A cool merge function, that emits warnings
+#
+# @args obj, args..., last
+# the first argunment is the object we merge in,, which can also be a function, or better if the first obj is not an object we just set it to the merge value,
+# the last can be a boolean, in such case it is a switch for turning on and off warnings, on overwriting existing variables
+# logging of warnings is turned on by default
+#
 ###
-# a mixin function similar to _.extend
 module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) =>
+  if not obj? then throw new Error('merge: first parameter must not be undefined')
   log = true #logging of merge conflict is turned on by default
   initialProps = {}
   initialProps[prop] = true for own prop of obj
   if typeof last isnt 'boolean' then args.push last else log = last
   for source in args
-    if typeof source isnt 'object' #its e.g. a function, string, array, etc.
-      if not isEmpty(obj) 
-        debugger
-        if log then NodeBase.warn "Object #{JSON.stringify(obj) or typeof obj[prop]} exists and will be overwritten with #{JSON.stringify(source) or typeof obj[prop]}"
+    if (typeof source isnt 'object') and source? #if source is not an object and not undefined set obj to source, but log if we overwrite an existing obj
+      if (typeof obj isnt 'object' and obj?) or not isEmpty(obj) #obj can be a function or string or an object containing something, then we warn
+        if log then NodeBase.warn "Object #{JSON.stringify(obj) or typeof obj} exists and will be overwritten with #{JSON.stringify(source) or typeof obj}"
       obj = source
     else  
       for own prop of source
@@ -157,7 +171,9 @@ module.exports.merge = module.exports.extend = module.exports.mixin = merge = (o
             ###at #{new Error().stack}###
         obj[prop] = source[prop]
   return obj
-
+#Coffeescript is anoying on this, all you don't define before, will be undefined
+NodeBase.options = NodeBase.defaults = merge NodeBase.defaults, NodeBase.objdefaults
+    
 #the node version
 node_ver = null
 do ->
@@ -252,6 +268,7 @@ getTotalCids =  (obj) ->
 #a capped hash collection   
 class CappedObject extends Array
   constructor: (max, name)->
+    if not name or typeof global[name] is 'function' then throw Error "[CappedObject] #{name} is not a function in the global namespace"    
     @max = max 
     @name = name
     @dropped = false
@@ -266,10 +283,10 @@ class CappedObject extends Array
      #lookup the lastobject in the collection
      pop = @_getLast()
      delete @Collection[pop._id]
-     NodeBase.warn "CAP LIMIT REACHED! Dropping object #{pop._id} of collection #{@name}"
+     global[name].warn "[CappedObject] CAP LIMIT REACHED! Dropping object #{pop._id} of collection #{@name}" #global[name] is the static log function to call
      @dropped = true #set to true cause we started drppng elements
   getId: (id) ->
-    if not @Collection[id] and @dropped then module.exports.error "the object #{id} was not found in the collection, this might be due to dropped elements!"
+    if not @Collection[id] and @dropped then global[name].error "[CappedObject] the object #{id} was not found in the collection, this might be due to dropped elements!"
     return @Collection[id] 
   
 
@@ -324,18 +341,4 @@ else
   stylize = (level) ->  
     return '['+ level + '] '
 
-#from underscore.coffee
-isEmpty = (obj) ->
-  return obj.length is 0 if isArray(obj) or isString(obj)
-  return false for own key of obj
-  true
 
-isElement   = (obj) -> obj and obj.nodeType is 1
-
-isArguments = (obj) -> obj and obj.callee
-
-isFunction  = (obj) -> !!(obj and obj.constructor and obj.call and obj.apply)
-
-isString    = (obj) -> !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
-
-isArray     = Array.isArray or (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
