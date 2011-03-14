@@ -123,7 +123,7 @@ b) as a mixin (beginning from version 0.6.0)
 
 ### Best practices
 
-- always install an @on 'error' handler
+- always install an @on 'error' handler at constructor time
 - use @error(message, type, other, args)
 - use an _error(message, type, args) function in your class for consistent error handling and 
 - emit errors with a message, type, and data field
