@@ -224,6 +224,7 @@ Furthermore there are some performance tests regarding the Cache implementation 
 - DONE eventually export log functions also statically
 - feel free to extend NodeBase in whatever way you want. E.g. a database logger, config reader and writer, etc.
 - DONE eventually add an option for a static objects lookup function (danger of memory leak though - SOLVED WITH A CAPPED COLLECTION HASH)
+- make a stack extraction function (what should that do???)
 
 
 ## Credits
