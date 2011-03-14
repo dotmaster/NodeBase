@@ -73,6 +73,7 @@ a) Inheritance
         @defaults =
           put:'someDefaultsHere'
         super(opts) #pass options to super, will set @options as a mixin of defaults and opts, no need to pass defaulkts here
+        @on 'error', (err) -> @warn 'emitted err ' JSON.stringify err
       someMember: => @log 'hello there'
   
     myObj = new someClass 
@@ -97,12 +98,14 @@ b) as a mixin (beginning from version 0.6.0)
       @defaults: 
         logging:true
       nodeBase.static(@); #add static @options and @defaults to class
+      @options.logLevel = 'ALL' #call this also after      
       constructor:(opts) -> #pass in some object level options and the defaults
         #add some object level defaults
         @defaults =
           put:'someDefaultsHere'
         #must call the constructor before mixing in nodeBase! (to reduce risk of potentially shallowing constructor functions of Client)
         super(arguments...)
+        @on 'error', (err) -> @warn 'emitted err ' JSON.stringify err
         #nodeBase as a mixin, using merge is better then just saying @[i]=n[i]
         @[i] = NodeBase.merge @[i] ||= {} = n[i] for i, val of n = new nodeBase(opts,@defaults) #remember to pass the defaults
       register: => #some member functions
@@ -117,6 +120,26 @@ b) as a mixin (beginning from version 0.6.0)
       #will output
       #[new filteredClient id:1]  -- Mon, 07 Mar 2011 12:52:08 GMT  [ERROR] awesome!!!
       #[filteredClient.register id:1]  -- Mon, 07 Mar 2011 12:52:08 GMT  [WARN] hello there
+
+### Best practices
+
+- always install an @on 'error' handler
+- use @error(message, type, other, args)
+- use an _error(message, type, args) function in your class for consistent error handling and 
+- emit errors with a message, type, and data field
+MIXINS
+- avoid mixins if not nodeBase, but instead subscribe to events of shallowed objects
+- use own statement when mixing in and filter out warnings by using the false parameter at the end of merge
+- set object @defaults before calling super
+- always call super with opts, and second argument default (super expects nothing else)
+- if you inherit from nodeBase defaults will be taken from @defaults (see before)
+- when mixing in functions take special care of what you really need by using the own keyword and by using merge diversifying for special member vars like @options
+STATIC USAGE
+- use NodeBase.static(@) if you want to use it
+- set object @defaults before calling NodeBase.static
+- call CLASS.options.logLevel = 'ALL' during constructor #turn on logging of CLASS level events
+- make a static log shortcut if you like log = -> CLASS.log arguments...
+
 
     
 ## Reserved words
