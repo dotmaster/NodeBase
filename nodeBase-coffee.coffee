@@ -283,7 +283,7 @@ getTotalCids =  (obj) ->
 #a capped hash collection   
 class CappedObject extends Array
   constructor: (max, name)->
-    if not name or typeof global[name] is 'function' then throw Error "[CappedObject] #{name} is not a function in the global namespace"    
+    if not (name or typeof global[name] is 'function') then throw Error "[CappedObject] #{name} is not a function in the global namespace"    
     @max = max 
     @name = name
     @dropped = false
