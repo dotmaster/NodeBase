@@ -105,9 +105,10 @@ b) as a mixin (beginning from version 0.6.0)
           put:'someDefaultsHere'
         #must call the constructor before mixing in nodeBase! (to reduce risk of potentially shallowing constructor functions of Client)
         super(arguments...)
-        @on 'error', (err) -> @warn 'emitted err ' JSON.stringify err
+        
         #nodeBase as a mixin, using merge is better then just saying @[i]=n[i]
         @[i] = NodeBase.merge @[i] ||= {} = n[i] for i, val of n = new nodeBase(opts,@defaults) #remember to pass the defaults
+        @on 'error', (err) -> @warn 'emitted err ' JSON.stringify err
       register: => #some member functions
       
       myObj = new filteredClient 
@@ -123,22 +124,36 @@ b) as a mixin (beginning from version 0.6.0)
 
 ### Best practices
 
+OPTIONS AND DEFAULTS
+
+- options are composed by @constructor.objdefaults, @defaults, and mixin defaults, before mixin options
+- static options are composed of static obj defaults and static class level defaults before mixed in through static with static SUPERCLASS defaults
+- defaults can be either set with @default or by passing a second argument to NodeBase constructor
+- static defaults can be set with @default before the constructor statement and before calling static
+
+ERROR HANDLING AND MESSAGING
+
 - always install an @on 'error' handler at constructor time
 - use @error(message, type, other, args)
 - use an _error(message, type, args) function in your class for consistent error handling and 
 - emit errors with a message, type, and data field
+
 MIXINS
+
 - avoid mixins if not nodeBase, but instead subscribe to events of shallowed objects
 - use own statement when mixing in and filter out warnings by using the false parameter at the end of merge
 - set object @defaults before calling super
 - always call super with opts, and second argument default (super expects nothing else)
 - if you inherit from nodeBase defaults will be taken from @defaults (see before)
 - when mixing in functions take special care of what you really need by using the own keyword and by using merge diversifying for special member vars like @options
+
 STATIC USAGE
+
 - use NodeBase.static(@) if you want to use it
 - set object @defaults before calling NodeBase.static
 - call CLASS.options.logLevel = 'ALL' during constructor #turn on logging of CLASS level events
 - make a static log shortcut if you like log = -> CLASS.log arguments...
+- use CLASS_emitter for static level events_
 
 
     

@@ -132,7 +132,7 @@ class NodeBase extends events.EventEmitter
       cacheSize: 5
     ,defaults, false
     # merge constructor level Object defaults before object level defaults
-    @options = merge @options or= {}, @constructor.objdefaults, defaults, opts, true
+    @options = merge @options or= {}, @constructor.objdefaults, @defaults, defaults, opts, true
     #@on 'error', (err) -> @log 'emitted error ' + JSON.stringify(err)
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
