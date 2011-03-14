@@ -124,6 +124,12 @@ b) as a mixin (beginning from version 0.6.0)
 
 ### Best practices
 
+#### GENERAL HINTS
+
+- ALWAYS EMIT AS MANY EVENTS AS YOU CAN FROM YOUR OBJECTS to avoid tight coupling instead of direct access of shallowed objects, or using subclasses or mixins
+- this makes your code much more readable
+- this also avoids others from needing to subclass you!
+
 #### OPTIONS AND DEFAULTS
 
 - options are composed by @constructor.objdefaults, @defaults, and mixin defaults, before mixin options
