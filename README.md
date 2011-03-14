@@ -205,6 +205,8 @@ you can pass in the following defaults to your class:
     major: 0
     minor: 4
     release: 1
+  nodeBase.SHA1 
+  nodeBase.HMACSHA1
     
 ## Running tests
 
@@ -224,7 +226,8 @@ Furthermore there are some performance tests regarding the Cache implementation 
 - DONE eventually export log functions also statically
 - feel free to extend NodeBase in whatever way you want. E.g. a database logger, config reader and writer, etc.
 - DONE eventually add an option for a static objects lookup function (danger of memory leak though - SOLVED WITH A CAPPED COLLECTION HASH)
-- make a stack extraction function (what should that do???)
+- make a stack extraction function (what should that do however???)
+- DONE integrate an SHA1 function?
 
 
 ## Credits

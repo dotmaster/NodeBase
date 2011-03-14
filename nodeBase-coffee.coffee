@@ -2,6 +2,7 @@ events = require('events')
 util = require(if process.binding('natives').util then 'util' else 'sys')
 #extend the stacktracelimit for coffeescript
 Error.stackTraceLimit = 50;
+stringify =  (obj) -> JSON.stringify(obj, null, " ")
 
 #from underscore.coffee
 isEmpty = (obj) ->
@@ -27,6 +28,7 @@ isArray     = Array.isArray or (obj) -> !!(obj and obj.concat and obj.unshift an
 # logging of warnings is turned on by default
 #
 ###
+
 module.exports.merge = module.exports.extend = module.exports.mixin = merge = (obj, args..., last) ->
   if not obj? then throw new Error('merge: first parameter must not be undefined')
   log = true #logging of merge conflict is turned on by default
@@ -38,13 +40,13 @@ module.exports.merge = module.exports.extend = module.exports.mixin = merge = (o
     if (typeof source isnt 'object') and source? #if source is not an object and not undefined set obj to source, but log if we overwrite an existing obj
       if (typeof obj isnt 'object' and obj?) or not isEmpty(obj) #obj can be a function or string or an object containing something, then we warn
         debugger
-        if log then @warn "Object #{JSON.stringify(obj) or obj.name or typeof obj} exists and will be overwritten with #{JSON.stringify(source) or obj.name or typeof obj}"
+        if log then @warn "Object #{stringify(obj) or obj.name or typeof obj} exists and will be overwritten with #{stringify(source) or obj.name or typeof obj}"
       obj = source
     else  
       for own prop of source
         if initialProps[prop]?   #if the property already exists in the iniotial properties the object had before merge
           if log  # and we log
-            @warn "property #{prop} exists and value #{JSON.stringify(obj[prop]) or typeof obj[prop]} will be overwritten with #{JSON.stringify(source[prop]) or typeof obj[prop]}" #give a warning about overwriting and existing initial Property of Object
+            @warn "property #{prop} exists and value #{stringify(obj[prop]) or typeof obj[prop]} will be overwritten with #{stringify(source[prop]) or typeof obj[prop]}" #give a warning about overwriting and existing initial Property of Object
             ###at #{new Error().stack}###
         obj[prop] = source[prop]
   return obj
@@ -99,7 +101,7 @@ class NodeBase extends events.EventEmitter
   @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
   @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
   @_emitter = new events.EventEmitter();
-  @_emitter.on 'error', (err) -> console.log JSON.stringify err
+  @_emitter.on 'error', (err) -> console.log stringify(err, null, " ")
   @_addContext = ( args..., level ) ->
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
