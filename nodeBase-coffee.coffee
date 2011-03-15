@@ -95,7 +95,7 @@ class NodeBase extends events.EventEmitter
   @Cache = ->  if @name? then Cache[@name] else Cache['NodeBase']
   @getTotalIds = -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
   @log = -> if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
-  @warn = -> debugger; if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
+  @warn = -> if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
   @info = -> if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
   @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
   @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
@@ -105,6 +105,7 @@ class NodeBase extends events.EventEmitter
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
     message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
+    messageColor = "#{colorize('[ '+ stack + ']', level)}  -- #{now()}  #{args.join ' '}"
     if @options.emitLog
       @_emitter.emit level.toLowerCase(), 
         'message': message
@@ -112,7 +113,7 @@ class NodeBase extends events.EventEmitter
             'class': @name
             'args': args[1...args.length]
         'type': args[1]
-    return message
+    return messageColor
           
   constructor:(opts, defaults) ->
     super()    
@@ -121,7 +122,7 @@ class NodeBase extends events.EventEmitter
   init: (opts, defaults) ->
     self=this
     #merge defaults but don't make them public -> defaults will become options
-    defaults = merge {},  
+    _defaults = merge {},  
       logging: true
       logLevel: 'ERROR'
       printLevel: true
@@ -131,15 +132,15 @@ class NodeBase extends events.EventEmitter
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
-    ,defaults, false
+    ,@defaults, defaults, false
     # merge constructor level Object defaults before object level defaults
-    @options = merge @options or= {}, @constructor.objdefaults, @defaults, defaults, opts, true
+    @options = merge @options or= {}, @constructor.objdefaults,  _defaults, opts, true
     #@on 'error', (err) -> @log 'emitted error ' + JSON.stringify(err)
     @LOG_LEVELS = LL #make log levels available in the object
     @_checkLogLevel = (level)->
       LL[@options.logLevel] <= LL[level]
     if @_id and @options.autoId then @warn 'overwriting _id'
-    @_id = if @options.autoId then cid(this) else ""
+    @_id = if @options.autoId then cid(this) else @_id
     @_uuid =  if @options.autoUuid then UUID.uuid() else ""
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
     if @constructor.options.addToCollection then addId(this)
@@ -159,6 +160,7 @@ class NodeBase extends events.EventEmitter
     stack ?= @constructor.name
     if @options.autoId then id = " id:#{@_id}"
     message = "[#{stack + id}]  -- #{now()}  #{args.join ' '}"
+    messageColor = "#{colorize('[ '+ stack + id + ']', level)}  -- #{now()}  #{args.join ' '}"
     if @options.emitLog
       @emit level.toLowerCase(), 
         'message': message
@@ -168,7 +170,7 @@ class NodeBase extends events.EventEmitter
           'uuid': @_uuid
           'args': args[1...args.length] 
         'type': args[1] #let's say that the first argument is the message, the second the type
-    return message   
+    return messageColor   
   ###  
   #
   # OBJECT LOGGING
@@ -318,29 +320,37 @@ addId = (obj)->
 
 module.exports.cid = cid
 
+# http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+styles =
+    'bold' : [1, 22]
+    'italic' : [3, 23]
+    'underline' : [4, 24]
+    'inverse' : [7, 27]
+    'white' : [37, 39]
+    'grey' : [90, 39]
+    'black' : [30, 39]
+    'blue' : [34, 39]
+    'cyan' : [36, 39]
+    'green' : [32, 39]
+    'magenta' : [35, 39]
+    'red' : [31, 39]
+    'yellow' : [33, 39]
+levelStylesMapping =
+    'WARN': 'magenta'       
+    'ERROR': 'red'              
+    'INFO': 'cyan'        
+    'LOG': 'green'    
+    
+colorize = (string, color) -> #can be a color or level
+  color = levelStylesMapping[color]?=color
+  return '\033[' + styles[color][0] + 'm' + string +
+         '\033[' + styles[color][1] + 'm'
+       
 #Stylize color helper
 stylize = (level) ->
-  # http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-  styles =
-      'bold' : [1, 22]
-      'italic' : [3, 23]
-      'underline' : [4, 24]
-      'inverse' : [7, 27]
-      'white' : [37, 39]
-      'grey' : [90, 39]
-      'black' : [30, 39]
-      'blue' : [34, 39]
-      'cyan' : [36, 39]
-      'green' : [32, 39]
-      'magenta' : [35, 39]
-      'red' : [31, 39]
-      'yellow' : [33, 39]
 
-  levelStylesMapping =
-      'WARN': 'magenta'       
-      'ERROR': 'red'              
-      'INFO': 'cyan'        
-      'LOG': 'green'
+
+
   style = levelStylesMapping[level]
 
   if (style)
@@ -354,5 +364,6 @@ if global?
 else
   stylize = (level) ->  
     return '['+ level + '] '
-
+  colorize = (string, color) -> 
+    string
 
