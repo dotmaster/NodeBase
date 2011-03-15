@@ -128,7 +128,7 @@ class NodeBase extends events.EventEmitter
       printLevel: true
       printContext: true    
       useStack: true  
-      emitLog: true
+      emitLog: false
       autoId: true 
       autoUuid: true                     
       cacheSize: 5
