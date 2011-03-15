@@ -39,7 +39,6 @@ module.exports.merge = module.exports.extend = module.exports.mixin = merge = (o
     if obj is source then return obj #if it's the same just return 
     if (typeof source isnt 'object') and source? #if source is not an object and not undefined set obj to source, but log if we overwrite an existing obj
       if (typeof obj isnt 'object' and obj?) or not isEmpty(obj) #obj can be a function or string or an object containing something, then we warn
-        debugger
         if log then @warn "Object #{stringify(obj) or obj.name or typeof obj} exists and will be overwritten with #{stringify(source) or obj.name or typeof obj}"
       obj = source
     else  
@@ -82,7 +81,7 @@ class NodeBase extends events.EventEmitter
     printLevel: true
     printContext: true    
     useStack: true
-    emitLog: true    
+    emitLog: false    
   @defaults = merge @objdefaults, #see above Coffescript is annoying on using functions that are defined later in context
       addToCollection: false         
       maxCap: 10000    
