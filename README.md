@@ -5,6 +5,7 @@ This module is the mother of all Objects of my Projects. It adds logging facilit
 
 NOTE: As of version 0.5.0 development is just done in Coffeescript!
 
+NOTE: As of version 0.8.0 NodeBase is considered stable
 
 ## Why?
 
