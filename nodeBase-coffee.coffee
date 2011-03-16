@@ -356,7 +356,6 @@ _addStaticContext = ( args..., level ) ->
   return messageColor
   
 _addContext = ( args..., level ) ->
-  debugger
   args.unshift stylize(level) if level? and @options.printLevel   
   try
     reg = new RegExp /at\s(.*)\s\(/g
@@ -415,7 +414,6 @@ _wamit = (type, dataObj={}, message="") ->
   mes = if message is "" then type else message    
   dataObj.message ?= "" 
   if typeof dataObj.message is "string" then dataObj.message += ' - ' + mes #don't override if dataObj has an existing message property
-  debugger
   @warn mes
   @emit type, dataObj   
 _inmit = (type, dataObj={}, message="") ->
