@@ -104,8 +104,8 @@ class NodeBase extends events.EventEmitter
   @_addContext = ( args..., level ) ->
     args.unshift stylize(level) if level? and @options.printLevel   
     stack = @name + ' static'
-    message = "[#{stack}]  -- #{now()}  #{args.join ' '}"
-    messageColor = "#{colorize('[ '+ stack + ']', level)}  -- #{now()}  #{args.join ' '}"
+    message = "[-- #{now()} #{stack}]  #{args.join ' '}"
+    messageColor = " -- #{now()}  #{colorize('[ '+ stack + ']', level)} #{args.join ' '}"
     if @options.emitLog
       @_emitter.emit level.toLowerCase(), 
         'message': message
@@ -156,11 +156,15 @@ class NodeBase extends events.EventEmitter
       #this is a hardcore hack, but what shalls
       if @options.useStack 
         stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
+        if stack.indexOf('inmit') isnt -1 or 
+          stack.indexOf('inmit') isnt -1 or
+          stack.indexOf('ermit') isnt -1           
+          then stack = stackArray[13]
     catch e  
     stack ?= @constructor.name
     if @options.autoId then id = " id:#{@_id}"
-    message = "[#{stack + id}]  -- #{now()}  #{args.join ' '}"
-    messageColor = "#{colorize('[ '+ stack + id + ']', level)}  -- #{now()}  #{args.join ' '}"
+    message = "-- #{now()} [#{stack + id}]  #{args.join ' '}"
+    messageColor = "-- #{now()} #{colorize('[ '+ stack + id + ']', level)} #{args.join ' '}"
     if @options.emitLog
       @emit level.toLowerCase(), 
         'message': message
@@ -181,9 +185,56 @@ class NodeBase extends events.EventEmitter
   log: => if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
   warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
   info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
-  error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')                
-  #export the base class
-
+  error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')
+  #combined emit logging functions
+  ermit: (message, errObj={}) =>
+    mes = if typeof message isnt 'string' and message.message? then message.message else message #ducktype for passing in an error object
+    if arguments.length < 1 or typeof mes isnt 'string' then throw "Ermit needs at least one arguments: a message and an optional error Object"
+    ###
+      message data
+      - message
+      -stack (the current stack)
+      -err (the underlying errorObj)
+    ###
+    err = 
+      'stack': new Error().stack
+      'message': message
+      'err': errObj
+    @error mes
+    @emit 'error', err
+  wamit: (type, dataObj={}, message="") =>
+    if arguments.length <1 or 
+      typeof message isnt 'string' or 
+      typeof type isnt 'string' 
+      then throw "wamit needs at least one arguments: a type, an optional Data Object and an optional message"
+    ###
+      data
+      dataOb   
+      - message
+    ###
+    mes = if message is "" then type else message    
+    dataObj.message ?= "" 
+    if typeof dataObj.message is "string" then data.message += ' - ' + mes #don't override if dataObj has an existing message property
+    @warn mes
+    @emit type, dataObj   
+  inmit: (type, dataObj={}, message="") =>
+    if arguments.length <1 or 
+      typeof message isnt 'string' or 
+      typeof type isnt 'string' 
+      then throw "inmit needs at least one arguments: a type, an optional Data Object and an optional message"
+    mes = if message is "" then type else message
+    ###
+      data
+      dataOb   
+      - message
+    ###
+    if dataObj.message then dataObj.message + " - " else "" #don't override if dataObj has an existing message property
+    dataObj.message += mes
+    @info mes
+    @emit type, dataObj 
+                  
+#export the base class
+#
 module.exports = NodeBase
 module.exports.LOG_LEVELS = LL;
 
