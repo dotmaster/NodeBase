@@ -148,6 +148,11 @@ b) as a mixin (beginning from version 0.6.0)
 - use an _error(id, stringMessage, err, type = "e.g. filedownload", tags = "")) function in your class for consistent error handling and 
 - emit errors with a status, type, data, message field
 
+#### ERMIT, INMIT AND WAMIT
+
+- ermit: takes a message and an object and emits the object together with the message. It also does some checking if the object contains a message field. It also integrates the message in the object if the object has already a message field, that is a string
+- inmit and wamit: take a type field and an optional data object as well a optional message field
+
 #### MIXINS
 
 - use noeBases static merge function for mixins
