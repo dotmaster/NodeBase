@@ -98,22 +98,14 @@ class NodeBase extends events.EventEmitter
   @warn = -> if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
   @info = -> if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
   @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
-  @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]
+  @emit: -> @_emitter.emit.apply @, arguments 
+  @ermit= -> _ermit.apply @, arguments 
+  @wamit= -> _wamit.apply @, arguments 
+  @inmit= -> _inmit.apply @, arguments 
   @_emitter = new events.EventEmitter();
   @_emitter.on 'error', (err) -> console.log stringify(err, null, " ")
-  @_addContext = ( args..., level ) ->
-    args.unshift stylize(level) if level? and @options.printLevel   
-    stack = @name + ' static'
-    message = "[-- #{now()} #{stack}]  #{args.join ' '}"
-    messageColor = " -- #{now()}  #{colorize('[ '+ stack + ']', level)} #{args.join ' '}"
-    if @options.emitLog
-      @_emitter.emit level.toLowerCase(), 
-        'message': message
-        'data': 
-            'class': @name
-            'args': args[1...args.length]
-        'type': args[1]
-    return messageColor
+  @_addContext = -> _addStaticContext.apply @, arguments 
+  @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level] 
           
   constructor:(opts, defaults) ->
     super()    
@@ -146,35 +138,7 @@ class NodeBase extends events.EventEmitter
     if @constructor.options.addToCollection then addId(this)
 
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
-  _addContext: ( args..., level ) =>
-    args.unshift stylize(level) if level? and @options.printLevel   
-    try
-      reg = new RegExp /at\s(.*)\s\(/g
-      #RegExp.multiLine = true
-      stackArray = new Error().stack.split reg
-      #console.log util.inspect stackArray
-      #this is a hardcore hack, but what shalls
-      if @options.useStack 
-        stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
-        if stack.indexOf('inmit') isnt -1 or 
-          stack.indexOf('inmit') isnt -1 or
-          stack.indexOf('ermit') isnt -1           
-          then stack = stackArray[13]
-    catch e  
-    stack ?= @constructor.name
-    if @options.autoId then id = " id:#{@_id}"
-    message = "-- #{now()} [#{stack + id}]  #{args.join ' '}"
-    messageColor = "-- #{now()} #{colorize('[ '+ stack + id + ']', level)} #{args.join ' '}"
-    if @options.emitLog
-      @emit level.toLowerCase(), 
-        'message': message
-        'data': 
-          'class': @constructor.name
-          'id': @_id
-          'uuid': @_uuid
-          'args': args[1...args.length] 
-        'type': args[1] #let's say that the first argument is the message, the second the type
-    return messageColor   
+  _addContext: -> _addContext.apply @, arguments
   ###  
   #
   # OBJECT LOGGING
@@ -186,52 +150,9 @@ class NodeBase extends events.EventEmitter
   warn: => if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
   info: => if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
   error: => if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')
-  #combined emit logging functions
-  ermit: (message, errObj={}) =>
-    mes = if typeof message isnt 'string' and message.message? then message.message else message #ducktype for passing in an error object
-    if arguments.length < 1 or typeof mes isnt 'string' then throw "Ermit needs at least one arguments: a message and an optional error Object"
-    ###
-      message data
-      - message
-      -stack (the current stack)
-      -err (the underlying errorObj)
-    ###
-    err = 
-      'stack': new Error().stack
-      'message': message
-      'err': errObj
-    @error mes
-    @emit 'error', err
-  wamit: (type, dataObj={}, message="") =>
-    if arguments.length <1 or 
-      typeof message isnt 'string' or 
-      typeof type isnt 'string' 
-      then throw "wamit needs at least one arguments: a type, an optional Data Object and an optional message"
-    ###
-      data
-      dataOb   
-      - message
-    ###
-    mes = if message is "" then type else message    
-    dataObj.message ?= "" 
-    if typeof dataObj.message is "string" then data.message += ' - ' + mes #don't override if dataObj has an existing message property
-    @warn mes
-    @emit type, dataObj   
-  inmit: (type, dataObj={}, message="") =>
-    if arguments.length <1 or 
-      typeof message isnt 'string' or 
-      typeof type isnt 'string' 
-      then throw "inmit needs at least one arguments: a type, an optional Data Object and an optional message"
-    mes = if message is "" then type else message
-    ###
-      data
-      dataOb   
-      - message
-    ###
-    if dataObj.message then dataObj.message + " - " else "" #don't override if dataObj has an existing message property
-    dataObj.message += mes
-    @info mes
-    @emit type, dataObj 
+  ermit: => _ermit.apply @, arguments 
+  wamit: => _wamit.apply @, arguments 
+  inmit: => _inmit.apply @, arguments 
                   
 #export the base class
 #
@@ -418,3 +339,97 @@ else
   colorize = (string, color) -> 
     string
 
+#common LOGGING functionality  ->! this comes over caller
+ 
+_addStaticContext = ( args..., level ) ->
+  args.unshift stylize(level) if level? and @options.printLevel   
+  stack = @name + ' static'
+  message = "[-- #{now()} #{stack}]  #{args.join ' '}"
+  messageColor = " -- #{now()}  #{colorize('[ '+ stack + ']', level)} #{args.join ' '}"
+  if @options.emitLog
+    @_emitter.emit level.toLowerCase(), 
+      'message': message
+      'data': 
+          'class': @name
+          'args': args[1...args.length]
+      'type': args[1]
+  return messageColor
+  
+_addContext = ( args..., level ) ->
+  debugger
+  args.unshift stylize(level) if level? and @options.printLevel   
+  try
+    reg = new RegExp /at\s(.*)\s\(/g
+    #RegExp.multiLine = true
+    stackArray = new Error().stack.split reg
+    #console.log util.inspect stackArray
+    #this is a hardcore hack, but what shalls
+    if @options.useStack 
+      stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
+      if stack.indexOf('inmit') isnt -1 or 
+        stack.indexOf('inmit') isnt -1 or
+        stack.indexOf('ermit') isnt -1           
+        then stack = stackArray[13]
+  catch e  
+  stack ?= @constructor.name
+  if @options.autoId then id = " id:#{@_id}"
+  message = "-- #{now()} [#{stack + id}]  #{args.join ' '}"
+  messageColor = "-- #{now()} #{colorize('[ '+ stack + id + ']', level)} #{args.join ' '}"
+  if @options.emitLog
+    @emit level.toLowerCase(), 
+      'message': message
+      'data': 
+        'class': @constructor.name
+        'id': @_id
+        'uuid': @_uuid
+        'args': args[1...args.length] 
+      'type': args[1] #let's say that the first argument is the message, the second the type
+  return messageColor
+
+#combined emit logging functions -> ! this comes over caller
+_ermit = (message, errObj={}) ->
+  mes = if typeof message isnt 'string' and message.message? then message.message else message #ducktype for passing in an error object
+  if arguments.length < 1 or typeof mes isnt 'string' then throw "Ermit needs at least one arguments: a message and an optional error Object"
+  ###
+    message data
+    - message
+    -stack (the current stack)
+    -err (the underlying errorObj)
+  ###
+  err = 
+    'stack': new Error().stack
+    'message': message
+    'err': errObj
+  @error mes
+  @emit 'error', err
+_wamit = (type, dataObj={}, message="") ->
+  if arguments.length <1 or 
+    typeof message isnt 'string' or 
+    typeof type isnt 'string' 
+    then throw "wamit needs at least one arguments: a type, an optional Data Object and an optional message"
+  ###
+    data
+    dataOb   
+    - message
+  ###
+  mes = if message is "" then type else message    
+  dataObj.message ?= "" 
+  if typeof dataObj.message is "string" then dataObj.message += ' - ' + mes #don't override if dataObj has an existing message property
+  debugger
+  @warn mes
+  @emit type, dataObj   
+_inmit = (type, dataObj={}, message="") ->
+  if arguments.length <1 or 
+    typeof message isnt 'string' or 
+    typeof type isnt 'string' 
+    then throw "inmit needs at least one arguments: a type, an optional Data Object and an optional message"
+  mes = if message is "" then type else message
+  ###
+    data
+    dataOb   
+    - message
+  ###
+  if dataObj.message then dataObj.message + " - " else "" #don't override if dataObj has an existing message property
+  dataObj.message += mes
+  @info mes
+  @emit type, dataObj
