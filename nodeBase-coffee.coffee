@@ -371,7 +371,7 @@ _addContext = ( args..., level ) ->
     reg = new RegExp /at\s(.*)\s\(.*[\/\\]([^\/\\\.]+\.js|[^\/\\\.]+\.coffee):(\d+):\d+/i
     #RegExp.multiLine = true
     stackArray = new Error().stack.split reg
-    debugger
+    #debugger
     #console.log util.inspect stackArray
     #this is a hardcore hack, but what shalls
     if @options.useStack 
