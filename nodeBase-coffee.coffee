@@ -383,7 +383,7 @@ _addContext = ( args..., level ) ->
         stack.indexOf('ermit') isnt -1           
         #then stack = stackArray[13]
         #then stack = "#{stackArray[22]}[#{stackArray[23]}]"
-        then stack = "[#{stackArray[30]}: (#{stackArray[29]}:[#{stackArray[31]}])"
+        then stack = "[#{stackArray[29]}: (#{stackArray[30]}:[#{stackArray[31]}])"
   catch e  
   stack ?= @constructor.name
   if @options.autoId then id = " id:#{@_id}"
