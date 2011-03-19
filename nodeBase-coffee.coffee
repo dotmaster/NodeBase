@@ -1,5 +1,6 @@
 events = require('events')
 util = require(if process.binding('natives').util then 'util' else 'sys')
+CappedObject = require './CappedObject'
 #extend the stacktracelimit for coffeescript
 Error.stackTraceLimit = 50;
 stringify =  (obj) -> JSON.stringify(obj, null, " ")
@@ -75,6 +76,11 @@ class NodeBase extends events.EventEmitter
   @static = (superClass) -> 
     superClass[i]?=NodeBase[i] for own i, val of NodeBase
     merge superClass.options or= {}, superClass.defaults, false #superClass options has already nodeBases @options merged in through extend
+    #superClass.Cache ?= new CappedObject(NodeBase.options.maxCap, superClass.name)     
+    #emit CLASS level cache events
+    #superClass.Cache.on 'add', (obj) => superClass.emit 'add', obj
+    #superClass.Cache.on 'remove', (obj) => superClass.emit 'remove', obj  
+    #superClass.Cache.on 'drop', (obj) => superClass.emit 'drop', obj
   @objdefaults = 
     logging: true
     logLevel: 'ERROR'
@@ -91,21 +97,35 @@ class NodeBase extends events.EventEmitter
   @extend = merge  
   @node_ver = node_ver 
   #Class Collection specific
-  @lookupId = (id)-> if @name? then Cache[@name]?.getId(id) else Cache['NodeBase']?.getId(id)
-  @Cache = ->  if @name? then Cache[@name] else Cache['NodeBase']
+  @lookupId = (id)-> if @name? then @Cache?.getId(id) else NodeBase?.getId(id)
+  #the CLASS level NODEBASE cache (=Capped Hash)
+  #@Cache ?= new CappedObject(NodeBase.options.maxCap, @name)     
+  #emit CLASS level cache events
+  #@Cache.on 'add', (obj) => @emit 'add', obj
+  #@Cache.on 'remove', (obj) => @emit 'remove', obj  
+  #@Cache.on 'drop', (obj) => @emit 'drop', obj
+  #@Cache = ->  if @name? then Cache[@name] else Cache['NodeBase']  
+  #remove Objects from the CLASS collection, see also @_remove() on Object level
+  @_remove = (obj) -> _remove(obj)  
+  #get the number of objects created
   @getTotalIds = -> if @name? then cids[@name] || 0 else cids['NodeBase'] || 0
+  #CLASS level logging
   @log = -> if @options.logging and @_checkLogLevel 'LOG' then console.log (@_addContext arguments..., 'LOG')
   @warn = -> if @options.logging and @_checkLogLevel 'WARN' then console.log (@_addContext arguments..., 'WARN')
   @info = -> if @options.logging and @_checkLogLevel 'INFO' then console.log (@_addContext arguments..., 'INFO')
-  @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')  
+  @error = -> if @options.logging and @_checkLogLevel 'ERROR' then console.log (@_addContext arguments..., 'ERROR')
+  @_addContext = -> _addStaticContext.apply @, arguments 
+  @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level]    
+  #event emitting of CLASS
   @emit: -> @_emitter.emit.apply @, arguments 
+  @_emitter = new events.EventEmitter();
+  @_emitter.on 'error', (err) -> console.log stringify(err, null, " ")  
+  #CLASS level combined log emitters
   @ermit= -> _ermit.apply @, arguments 
   @wamit= -> _wamit.apply @, arguments 
   @inmit= -> _inmit.apply @, arguments 
-  @_emitter = new events.EventEmitter();
-  @_emitter.on 'error', (err) -> console.log stringify(err, null, " ")
-  @_addContext = -> _addStaticContext.apply @, arguments 
-  @_checkLogLevel = (level)-> LL[@options.logLevel] <= LL[level] 
+
+
           
   constructor:(opts, defaults) ->
     super()    
@@ -136,7 +156,8 @@ class NodeBase extends events.EventEmitter
     @_uuid =  if @options.autoUuid then UUID.uuid() else ""
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
     if @constructor.options.addToCollection then addId(this)
-
+    @_remove = -> _remove(this)
+    
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
   _addContext: -> _addContext.apply @, arguments
   ###  
@@ -252,43 +273,30 @@ getTotalCids =  (obj) ->
   else
     cids['NodeBase'] || 0
 
-#a capped hash collection   
-#a capped hash collection   
-class CappedObject extends Array
-  constructor: (max, name)->
-    if not (name or typeof global[name] is 'function') then throw Error "[CappedObject] #{name} is not a function in the global namespace"    
-    @max = max 
-    @name = name
-    @dropped = false
-    @Collection = {};
-    @_byFIFO=[];   
-    @_getLast = -> @_byFIFO.pop() 
-  addId: (obj) ->
-   @_byFIFO.unshift(obj)
-   @Collection[obj._id] = obj #insert the Object at id into the hash
-   #if we exceeded the maximum size remove the last element
-   if @max and @_byFIFO.length > @max  
-     #lookup the lastobject in the collection
-     pop = @_getLast()
-     delete @Collection[pop._id]
-     global[name].warn "[CappedObject] CAP LIMIT REACHED! Dropping object #{pop._id} of collection #{@name}" #global[name] is the static log function to call
-     @dropped = true #set to true cause we started drppng elements
-  getId: (id) ->
-    if not @Collection[id] and @dropped then global[name].error "[CappedObject] the object #{id} was not found in the collection, this might be due to dropped elements!"
-    return @Collection[id] 
-  
 
 #add Ids to a global collection, can be looked up with the static function className.lookupId
-Cache = {}
+
+#Cache = {}
+_remove = (obj)->
+  if not obj._id then module.exports.error "Obj to add has no propety _id, please turn on autoId or give the object an _id before passing it to super"
+  if obj?.constructor.name? 
+   #(Cache[obj.constructor.name]?=new CappedObject(NodeBase.options.maxCap, obj.constructor.name)).remove(obj)
+   obj.constructor.Cache.remove(obj)
+  else
+    #(Cache['NodeBase']?={})[obj._id] = obj
+    #(Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap, 'NodeBase')).remove(obj)  
+    NodeBase.ne.remove(obj)
 addId = (obj)->
   #check if autoId is turned on or the object has an id
   if not obj._id then module.exports.error "Obj to add has no propety _id, please turn on autoId or give the object an _id before passing it to super"
   if obj?.constructor.name? 
    #(Cache[obj.constructor.name]?={})[obj._id] = obj
-   (Cache[obj.constructor.name]?=new CappedObject(NodeBase.options.maxCap, obj.constructor.name)).addId(obj)
+   #(Cache[obj.constructor.name]?=new CappedObject(NodeBase.options.maxCap, obj.constructor.name)).addId(obj)
+   (obj.constructor.Cache?=new CappedObject(NodeBase.options.maxCap, obj.constructor)).addId(obj)
   else
     #(Cache['NodeBase']?={})[obj._id] = obj
-    (Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap, 'NodeBase')).addId(obj)
+    #(Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap, 'NodeBase')).addId(obj)
+    (NodeBase.Cache?=new CappedObject(NodeBase.options.maxCap, NodeBase)).addId(obj)
 
 module.exports.cid = cid
 
@@ -358,17 +366,21 @@ _addStaticContext = ( args..., level ) ->
 _addContext = ( args..., level ) ->
   args.unshift stylize(level) if level? and @options.printLevel   
   try
-    reg = new RegExp /at\s(.*)\s\(/g
+    #reg = new RegExp /at\s(.*)\s\(/g
+    reg = new RegExp /at\s(.*)\s\(.*:(\d+):\d+/i
     #RegExp.multiLine = true
     stackArray = new Error().stack.split reg
+    debugger
     #console.log util.inspect stackArray
     #this is a hardcore hack, but what shalls
     if @options.useStack 
-      stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
+      #stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
+      stack = if stackArray[13].indexOf('new') is -1 and stackArray[19].indexOf('anonymous') is -1 then "#{stackArray[19]}[#{stackArray[20]}]"else "#{stackArray[13]}[#{stackArray[14]}]" # select everything before parenthesis for stack in stackArray
       if stack.indexOf('inmit') isnt -1 or 
         stack.indexOf('inmit') isnt -1 or
         stack.indexOf('ermit') isnt -1           
-        then stack = stackArray[13]
+        #then stack = stackArray[13]
+        then stack = "#{stackArray[25]}[#{stackArray[26]}]"
   catch e  
   stack ?= @constructor.name
   if @options.autoId then id = " id:#{@_id}"

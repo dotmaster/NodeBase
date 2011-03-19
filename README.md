@@ -178,7 +178,7 @@ Those are: this.defaults, this.options, this.emit, this.on, this.log, this.warn,
 ## Features
 
 ### Logging
-- fancy (highly experimental) stack trace extraction
+- fancy (highly experimental) stack trace context extraction of Class Name, Function and Code Line num
 - log levels
 - colored output
 - as of version 0.5.0 introduced static logging (see test directory for usage)
