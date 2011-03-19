@@ -381,12 +381,12 @@ _addContext = ( args..., level ) ->
         stack = "#{stackArray[25]} (#{stackArray[26]}:[#{stackArray[27]}])"
         fileNameAndLine = " in #{stackArray[26]}:[#{stackArray[27]}]"
         classAndFunction "#{stackArray[25]}"
-        isnew = true
+        isnew = false
       else 
         stack = "#{stackArray[17]} (#{stackArray[18]}:[#{stackArray[19]}])" # select everything before parenthesis for stack in stackArray
         fileNameAndLine = " in #{stackArray[18]}:[#{stackArray[19]}]"
         classAndFunction = "#{stackArray[17]}"
-        isnew = false
+        isnew = true
         
       #wamit handling
       if stack.indexOf('inmit') isnt -1 or 
