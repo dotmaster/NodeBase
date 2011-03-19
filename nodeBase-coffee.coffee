@@ -380,7 +380,7 @@ _addContext = ( args..., level ) ->
       if stackArray[17].indexOf('new') is -1 and stackArray[25]?.indexOf('anonymous') is -1  
         stack = "#{stackArray[25]} (#{stackArray[26]}:[#{stackArray[27]}])"
         fileNameAndLine = " in #{stackArray[26]}:[#{stackArray[27]}]"
-        classAndFunction "#{stackArray[25]}"
+        classAndFunction = "#{stackArray[25]}"
         isnew = false
       else 
         stack = "#{stackArray[17]} (#{stackArray[18]}:[#{stackArray[19]}])" # select everything before parenthesis for stack in stackArray
