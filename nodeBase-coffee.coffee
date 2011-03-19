@@ -155,7 +155,7 @@ class NodeBase extends events.EventEmitter
     @_id = if @options.autoId then cid(this) else @_id
     @_uuid =  if @options.autoUuid then UUID.uuid() else ""
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
-    if @constructor.options.addToCollection then addId(this)
+    if @constructor?.options?.addToCollection then addId(this)
     @_remove = -> _remove(this)
     
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
