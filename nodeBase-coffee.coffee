@@ -377,18 +377,36 @@ _addContext = ( args..., level ) ->
     if @options.useStack 
       #stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
       #stack = if stackArray[13].indexOf('new') is -1 and stackArray[19].indexOf('anonymous') is -1 then "#{stackArray[19]}[#{stackArray[20]}]"else "#{stackArray[13]}[#{stackArray[14]}]" # select everything before parenthesis for stack in stackArray
-      stack = if stackArray[17].indexOf('new') is -1 and stackArray[25].indexOf('anonymous') is -1 then "#{stackArray[25]} (#{stackArray[26]}:[#{stackArray[27]}])"else "#{stackArray[17]} (#{stackArray[18]}:[#{stackArray[19]}])" # select everything before parenthesis for stack in stackArray
+      if stackArray[17].indexOf('new') is -1 and stackArray[25]?.indexOf('anonymous') is -1  
+        stack = "#{stackArray[25]} (#{stackArray[26]}:[#{stackArray[27]}])"
+        fileNameAndLine = " in #{stackArray[26]}:[#{stackArray[27]}]"
+        classAndFunction "#{stackArray[25]}"
+        isnew = true
+      else 
+        stack = "#{stackArray[17]} (#{stackArray[18]}:[#{stackArray[19]}])" # select everything before parenthesis for stack in stackArray
+        fileNameAndLine = " in #{stackArray[18]}:[#{stackArray[19]}]"
+        classAndFunction = "#{stackArray[17]}"
+        isnew = false
+        
+      #wamit handling
       if stack.indexOf('inmit') isnt -1 or 
         stack.indexOf('wamit') isnt -1 or
         stack.indexOf('ermit') isnt -1           
         #then stack = stackArray[13]
         #then stack = "#{stackArray[22]}[#{stackArray[23]}]"
-        then stack = "[#{stackArray[29]}: (#{stackArray[30]}:[#{stackArray[31]}])"
+          if not isnew
+            stack = "[#{stackArray[29]}: (#{stackArray[30]}:[#{stackArray[31]}])"
+            fileNameAndLine = " in #{stackArray[30]}:[#{stackArray[31]}]"
+            classAndFunction = "#{stackArray[29]}"            
+          else 
+            stack = "[#{stackArray[21]}: (#{stackArray[22]}:[#{stackArray[23]}])"
+            fileNameAndLine = " in #{stackArray[22]}:[#{stackArray[23]}]"
+            classAndFunction = "#{stackArray[21]}"            
   catch e  
   stack ?= @constructor.name
   if @options.autoId then id = " id:#{@_id}"
-  message = "-- #{now()} [#{stack + id}]  #{args.join ' '}"
-  messageColor = "-- #{now()} #{colorize('[ '+ stack + id + ']', level)} #{args.join ' '}"
+  message = "-- #{now()} [#{classAndFunction + id}]  #{args.join ' '} #{fileNameAndLine}"
+  messageColor = "-- #{now()} #{colorize('['+ classAndFunction + id + ']', level)} #{args.join ' '} #{colorize(fileNameAndLine, level)}"
   if @options.emitLog
     @emit level.toLowerCase(), 
       'message': message
