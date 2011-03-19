@@ -377,13 +377,13 @@ _addContext = ( args..., level ) ->
     if @options.useStack 
       #stack = if stackArray[9].indexOf('new') is -1 and stackArray[11].indexOf('anonymous') is -1 then stackArray[11] else stackArray[9] # select everything before parenthesis for stack in stackArray
       #stack = if stackArray[13].indexOf('new') is -1 and stackArray[19].indexOf('anonymous') is -1 then "#{stackArray[19]}[#{stackArray[20]}]"else "#{stackArray[13]}[#{stackArray[14]}]" # select everything before parenthesis for stack in stackArray
-      stack = if stackArray[17].indexOf('new') is -1 and stackArray[25].indexOf('anonymous') is -1 then "#{stackArray[26]}:#{stackArray[25]}[#{stackArray[27]}]"else "#{stackArray[18]}: #{stackArray[17]}[#{stackArray[19]}]" # select everything before parenthesis for stack in stackArray
+      stack = if stackArray[17].indexOf('new') is -1 and stackArray[25].indexOf('anonymous') is -1 then "#{stackArray[25]} (#{stackArray[26]}:[#{stackArray[27]}])"else "#{stackArray[17]} (#{stackArray[18]}:[#{stackArray[19]}])" # select everything before parenthesis for stack in stackArray
       if stack.indexOf('inmit') isnt -1 or 
         stack.indexOf('wamit') isnt -1 or
         stack.indexOf('ermit') isnt -1           
         #then stack = stackArray[13]
         #then stack = "#{stackArray[22]}[#{stackArray[23]}]"
-        then stack = "#{stackArray[30]}: #{stackArray[29]}[#{stackArray[31]}]"
+        then stack = "[#{stackArray[30]}: (#{stackArray[29]}:[#{stackArray[31]}])"
   catch e  
   stack ?= @constructor.name
   if @options.autoId then id = " id:#{@_id}"
