@@ -420,7 +420,13 @@ _addContext = ( args..., level ) ->
 
 #combined emit logging functions -> ! this comes over caller
 _ermit = (message, errObj={}) ->
-  mes = if typeof message isnt 'string' and message.message? then message.message else message #ducktype for passing in an error object
+  mes = if typeof message isnt 'string' and message.message?  
+    if typeof message.message isnt 'string' and message.message.message?  # message instanceof  Error
+      message.message.message 
+    else 
+      message.message
+  else #ducktype for passing in an error object
+    message
   if arguments.length < 1 or typeof mes isnt 'string' then throw "Ermit needs at least one arguments: a message and an optional error Object"
   ###
     message data
