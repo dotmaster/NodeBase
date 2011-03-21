@@ -156,7 +156,7 @@ class NodeBase extends events.EventEmitter
     @_uuid =  if @options.autoUuid then UUID.uuid() else ""
     if @options.autoId then @_getTotalIds = -> getTotalIds @ #actually this is just a counter of times the constructor was called    
     if @constructor?.options?.addToCollection then addId(this)
-    @_remove = -> _remove(this)
+    @remove = -> _remove(this)
     
   #ADD THE CLASSNAME AND A TIMESTAMP TO THE LOGGING OUTPUT
   _addContext: -> _addContext.apply @, arguments
@@ -285,7 +285,7 @@ _remove = (obj)->
   else
     #(Cache['NodeBase']?={})[obj._id] = obj
     #(Cache['NodeBase']?=new CappedObject(NodeBase.options.maxCap, 'NodeBase')).remove(obj)  
-    NodeBase.ne.remove(obj)
+    NodeBase.Cache.remove(obj)
 addId = (obj)->
   #check if autoId is turned on or the object has an id
   if not obj._id then module.exports.error "Obj to add has no propety _id, please turn on autoId or give the object an _id before passing it to super"
