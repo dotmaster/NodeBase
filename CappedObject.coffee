@@ -14,7 +14,6 @@ class CappedObject extends require('events').EventEmitter
   remove: (obj) ->  
       if @Collection[obj._id] #don't remove Objects that aren't in the collection if we call remove more than one time don't augment the counter
         ++@removeCount
-        removedIds[obj._id] = true
         delete @Collection[obj._id] #delete from collection , but not from fifo (track over removeCount) to avoid sliceing
         @base.emit 'remove', obj
   addId: (obj) ->
