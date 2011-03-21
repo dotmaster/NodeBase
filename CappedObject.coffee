@@ -12,10 +12,13 @@ class CappedObject extends require('events').EventEmitter
     @_getLast = -> @_byFIFO.pop()
     @removeCount = 0
   remove: (obj) ->  
-      ++@removeCount
-      delete @Collection[obj._id] #delete from collection , but not from fifo (track over removeCount) to avoid sliceing
-      @base.emit 'remove', obj
+      if @Collection[obj._id] #don't remove Objects that aren't in the collection if we call remove more than one time don't augment the counter
+        ++@removeCount
+        removedIds[obj._id] = true
+        delete @Collection[obj._id] #delete from collection , but not from fifo (track over removeCount) to avoid sliceing
+        @base.emit 'remove', obj
   addId: (obj) ->
+   if @Collection[obj._id] then return @base.warn "[CappedObject.addId] Object already in collection returning" #if the object is already in the collection return but warn
    @_byFIFO.unshift(obj)
    @Collection[obj._id] = obj #insert the Object at id into the hash
 
