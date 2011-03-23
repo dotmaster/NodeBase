@@ -451,6 +451,7 @@ _wamit = (type, dataObj={}, message="") ->
     dataOb   
     - message
   ###
+  if typeof dataObj is "string" then message = dataObj
   mes = if message is "" then type else message    
   dataObj.message ?= "" 
   if typeof dataObj.message is "string" then dataObj.message += ' - ' + mes #don't override if dataObj has an existing message property
@@ -461,6 +462,7 @@ _inmit = (type, dataObj={}, message="") ->
     typeof message isnt 'string' or 
     typeof type isnt 'string' 
     then throw "inmit needs at least one arguments: a type, an optional Data Object and an optional message"
+  if typeof dataObj is "string" then message = dataObj
   mes = if message is "" then type else message
   ###
     data
