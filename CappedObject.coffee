@@ -41,6 +41,6 @@ class CappedObject extends require('events').EventEmitter
     @_byFIFO.length - @removeCount
 
   getObjectIds: ->
-    key for obj of @Collection
+    key for key of @Collection
     
 module.exports = CappedObject
