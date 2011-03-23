@@ -37,4 +37,10 @@ class CappedObject extends require('events').EventEmitter
     if not @Collection[id] and @dropped then global[name].error "[CappedObject] the object #{id} was not found in the collection, this might be due to dropped elements!"
     return @Collection[id] 
   
+  getNumberOfObjects: ->
+    @_byFIFO.length - @removeCount
+
+  getObjectIds: ->
+    obj._id for obj of @Collection
+    
 module.exports = CappedObject
